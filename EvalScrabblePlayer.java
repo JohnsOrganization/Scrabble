@@ -1,5 +1,4 @@
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -140,7 +139,7 @@ public class EvalScrabblePlayer {
      *  create the scrabble player and return the player object
      *  report time and space consumption
      */
-    private static ScrabblePlayer createScrabblePlayer(String dictFile) throws FileNotFoundException 
+    private static ScrabblePlayer createScrabblePlayer(String dictFile) 
     {
         //Preprocessing in ScrabblePlayer
         System.out.println("Preprocessing in ScrabblePlayer...");
@@ -161,7 +160,7 @@ public class EvalScrabblePlayer {
         System.out.println("Pre-processing in seconds (not part of performance): " + df.format(processingTimeInSec));
         System.out.println("Used memory after pre-processing in bytes (not part of performance): " + peakMemoryUsage());
 
-	return player;
+    return player;
     }
 
 
@@ -170,51 +169,51 @@ public class EvalScrabblePlayer {
      *  measure time, space, points
      */
     private static void playScrabble(ScrabblePlayer player, 
-			     ArrayList<String> dictionary,
-			     int numOfGames, long seed)
+                 ArrayList<String> dictionary,
+                 int numOfGames, long seed)
     {
         System.out.println("Playing Scrabble...");
 
-	int       totalPoints = 0;
-	long      totalElapsedTime = 0;
-	char[][]  board = new char[15][15];
-	char[]    availableLetters = new char[7]; 
-	Random    rand = new Random(seed);
+    int       totalPoints = 0;
+    long      totalElapsedTime = 0;
+    char[][]  board = new char[15][15];
+    char[]    availableLetters = new char[7]; 
+    Random    rand = new Random(seed);
     
-	for (int game = 0; game < numOfGames; game++)
-	    {
-		//to do: initialize the board with spaces
-		//       add a random word of at most length 7 from the dictionary
+    for (int game = 0; game < numOfGames; game++)
+        {
+        //to do: initialize the board with spaces
+        //       add a random word of at most length 7 from the dictionary
         ScrabbleWord initialWord = generateBoard(board, dictionary, rand);
 
-		//to do: Randomly pick 7 letters according to the distribution of letters in
-		//       the wiki page in the assignment
+        //to do: Randomly pick 7 letters according to the distribution of letters in
+        //       the wiki page in the assignment
         generateAvailableLetters(availableLetters, rand);
         
         
-		// the player might change board and/or availableLetters, give the player a clone
-		char[][] boardClone = board.clone();  
-		char[]   availableLettersClone = availableLetters.clone();
+        // the player might change board and/or availableLetters, give the player a clone
+        char[][] boardClone = board.clone();  
+        char[]   availableLettersClone = availableLetters.clone();
 
-		//Calculate the time taken to find the words on the board
-		long startTime = bean.getCurrentThreadCpuTime();
-		//Play the game of Scrabble and find the words
-		ScrabbleWord playerWord = player.getScrabbleWord(boardClone, availableLettersClone);
+        //Calculate the time taken to find the words on the board
+        long startTime = bean.getCurrentThreadCpuTime();
+        //Play the game of Scrabble and find the words
+        ScrabbleWord playerWord = player.getScrabbleWord(boardClone, availableLettersClone);
         
-		long endTime = bean.getCurrentThreadCpuTime();
+        long endTime = bean.getCurrentThreadCpuTime();
 
-		//System.out.println(endTime - startTime);
-		if ((endTime - startTime)/1.0E9 > 1)  // longer than 1 second
-		    {
-			System.err.println("player.getScrabbleWord() exceeded 1 second");
-			System.exit(-1);
-		    }
-		totalElapsedTime += (endTime - startTime);
+        //System.out.println(endTime - startTime);
+        if ((endTime - startTime)/1.0E9 > 1)  // longer than 1 second
+            {
+            System.err.println("player.getScrabbleWord() exceeded 1 second");
+            System.exit(-1);
+            }
+        totalElapsedTime += (endTime - startTime);
 
-		//Calculate points for the words found
-		totalPoints += calculatePoints(playerWord, initialWord, board, availableLetters, dictionary);
+        //Calculate points for the words found
+        totalPoints += calculatePoints(playerWord, initialWord, board, availableLetters, dictionary);
         //System.out.println("Total: " + totalPoints);
-	    }
+        }
 
         reportPerformance(totalPoints, totalElapsedTime, peakMemoryUsage(), 
                           numOfGames);
@@ -228,7 +227,7 @@ public class EvalScrabblePlayer {
      * based on time, space, and points
      */
     private static void reportPerformance(int totalPoints, long totalElapsedTime, long memory, 
-				  int numOfGames)
+                  int numOfGames)
     {
         // avoid divided by zero
         if (totalElapsedTime <= 0)
@@ -380,7 +379,7 @@ public class EvalScrabblePlayer {
             //return false;
             return null;
         }
-        
+        //////////
         //////////////////////////////////////////////////////////////////////////
         // Invalid case 2: out of boundary
         int maxIndex = 0;
@@ -829,19 +828,19 @@ public class EvalScrabblePlayer {
     private static long peakMemoryUsage() 
     {
 
-	List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
-	long total = 0;
-	for (MemoryPoolMXBean memoryPoolMXBean : pools)
-	    {
-		if (memoryPoolMXBean.getType() == MemoryType.HEAP)
-		{
-		    long peakUsage = memoryPoolMXBean.getPeakUsage().getUsed();
-		    // System.out.println("Peak used for: " + memoryPoolMXBean.getName() + " is: " + peakUsage);
-		    total = total + peakUsage;
-		}
-	    }
+    List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
+    long total = 0;
+    for (MemoryPoolMXBean memoryPoolMXBean : pools)
+        {
+        if (memoryPoolMXBean.getType() == MemoryType.HEAP)
+        {
+            long peakUsage = memoryPoolMXBean.getPeakUsage().getUsed();
+            // System.out.println("Peak used for: " + memoryPoolMXBean.getName() + " is: " + peakUsage);
+            total = total + peakUsage;
+        }
+        }
 
-	return total;
+    return total;
     }
 
 }

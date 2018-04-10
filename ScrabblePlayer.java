@@ -12,16 +12,25 @@
 
 */
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.*;
 
 
 public class ScrabblePlayer
 {
-
+    //Global fields
+    ArrayList<String> dictionary;
+    
     // initialize ScrabblePlayer with a file of English words
-    public ScrabblePlayer(String wordFile)
+    public ScrabblePlayer(String wordFile) throws FileNotFoundException
     {
-
+        //Read in the word file and store the created dictionary in the "dictionary" global field
+        Scanner dictFile = new Scanner(new File(wordFile));
+        dictionary = new ArrayList<>();
+        while (dictFile.hasNext()) {
+            dictionary.add(dictFile.nextLine().toUpperCase());
+        }
     }
 
     // based on the board and available letters, 

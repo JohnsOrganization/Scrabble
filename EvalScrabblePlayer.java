@@ -1,4 +1,5 @@
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ import java.lang.management.MemoryType;
   Email: hchang2014@my.fit.edu
   Pseudocode: Philip Chan
 
-  Usage: EvalScrabblePlayer wordFile [numOfGames] [seed]
+  Usage: EvalScrabblePlayer wordFile [seed] [numOfGames]
 
   Input:
   wordFile has valid words, one on each line
@@ -61,6 +62,38 @@ import java.lang.management.MemoryType;
 public class EvalScrabblePlayer {
 
     private static ThreadMXBean bean;  // for measuring cpu time
+    
+    // we deliberately use a worse approach so that we don't give away better ideas
+    // constant for the bonus cells on the board and the points for letters
+    private static final String[] BONUS_POS =
+    {"30","110","62","82","03","73","143","26","66","86","126","37","117", // double letter score
+     "28","68","88","128","011","711","1411","612","812","314","1114",     // double letter score
+     
+     "51","91","15","55","95","135","19","59","99","139","513","913",      // triple letter score
+     
+     "11","22","33","44","113","212","311","410","131","122","113",        // double word score
+     "104","1010","1111","1212","1313",                                    // double word score
+     
+     "00","70","07","014","140","147","714","1414"};                       // triple word score
+     
+     private static final String[] BONUS =
+     {"2L","2L","2L","2L","2L","2L","2L","2L","2L","2L","2L","2L","2L",
+      "2L","2L","2L","2L","2L","2L","2L","2L","2L","2L","2L",
+      
+      "3L","3L","3L","3L","3L","3L","3L","3L","3L","3L","3L","3L",
+      
+      "2W","2W","2W","2W","2W","2W","2W","2W","2W","2W","2W",
+      "2W","2W","2W","2W","2W",
+      
+      "3W","3W","3W","3W","3W","3W","3W","3W"};
+    
+    // points for letters
+    private static final char[] LETTERS =
+    {'_', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+     'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
+    private static final int[] LETTERS_SCORE =
+    {0, 1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3,
+     1, 1, 3, 10,1, 1, 1, 1, 4, 4, 8, 4, 10 };
 
     public static void main(String[] args) throws IOException {
 
@@ -107,7 +140,7 @@ public class EvalScrabblePlayer {
      *  create the scrabble player and return the player object
      *  report time and space consumption
      */
-    private static ScrabblePlayer createScrabblePlayer(String dictFile) 
+    private static ScrabblePlayer createScrabblePlayer(String dictFile) throws FileNotFoundException 
     {
         //Preprocessing in ScrabblePlayer
         System.out.println("Preprocessing in ScrabblePlayer...");
@@ -128,143 +161,60 @@ public class EvalScrabblePlayer {
         System.out.println("Pre-processing in seconds (not part of performance): " + df.format(processingTimeInSec));
         System.out.println("Used memory after pre-processing in bytes (not part of performance): " + peakMemoryUsage());
 
-    return player;
+	return player;
     }
 
-
-    // board score: https://en.wikipedia.org/wiki/Scrabble
-    private static HashMap<String, String> createBoardScore()
-    {
-        HashMap<String, String> pointsOnBoard = new HashMap<String, String>();
-        //double letter score
-        pointsOnBoard.put("30", "2L");
-        pointsOnBoard.put("110", "2L");
-        pointsOnBoard.put("62", "2L");
-        pointsOnBoard.put("82", "2L");
-        pointsOnBoard.put("03", "2L");
-        pointsOnBoard.put("73", "2L");
-        pointsOnBoard.put("143", "2L");
-        pointsOnBoard.put("26", "2L");
-        pointsOnBoard.put("66", "2L");
-        pointsOnBoard.put("86", "2L");
-        pointsOnBoard.put("126", "2L");
-        pointsOnBoard.put("37", "2L");
-        pointsOnBoard.put("117", "2L");
-        pointsOnBoard.put("28", "2L");
-        pointsOnBoard.put("68", "2L");
-        pointsOnBoard.put("88", "2L");
-        pointsOnBoard.put("128", "2L");
-        pointsOnBoard.put("011", "2L");
-        pointsOnBoard.put("711", "2L");
-        pointsOnBoard.put("1411", "2L");
-        pointsOnBoard.put("612", "2L");
-        pointsOnBoard.put("812", "2L");
-        pointsOnBoard.put("314", "2L");
-        pointsOnBoard.put("1114", "2L");
-        
-        //triple letter score
-        pointsOnBoard.put("51", "3L");
-        pointsOnBoard.put("91", "3L");
-        pointsOnBoard.put("15", "3L");
-        pointsOnBoard.put("55", "3L");
-        pointsOnBoard.put("95", "3L");
-        pointsOnBoard.put("135", "3L");
-        pointsOnBoard.put("19", "3L");
-        pointsOnBoard.put("59", "3L");
-        pointsOnBoard.put("99", "3L");
-        pointsOnBoard.put("139", "3L");
-        pointsOnBoard.put("513", "3L");
-        pointsOnBoard.put("913", "3L");
-        
-        //double word score
-        pointsOnBoard.put("11", "2W");
-        pointsOnBoard.put("22", "2W");
-        pointsOnBoard.put("33", "2W");
-        pointsOnBoard.put("44", "2W");
-        pointsOnBoard.put("113", "2W");
-        pointsOnBoard.put("212", "2W");
-        pointsOnBoard.put("311", "2W");
-        pointsOnBoard.put("410", "2W");
-        pointsOnBoard.put("131", "2W");
-        pointsOnBoard.put("122", "2W");
-        pointsOnBoard.put("113", "2W");
-        pointsOnBoard.put("104", "2W");
-        pointsOnBoard.put("1010", "2W");
-        pointsOnBoard.put("1111", "2W");
-        pointsOnBoard.put("1212", "2W");
-        pointsOnBoard.put("1313", "2W");
-        
-        //triple word score
-        pointsOnBoard.put("00", "3W");
-        pointsOnBoard.put("70", "3W");
-        pointsOnBoard.put("07", "3W");
-        pointsOnBoard.put("014", "3W");
-        pointsOnBoard.put("140", "3W");
-        pointsOnBoard.put("147", "3W");
-        pointsOnBoard.put("714", "3W");
-        pointsOnBoard.put("1414", "3W");
-
-        return pointsOnBoard;
-    }
-    
 
     /*
      *  use the player object to play scrabble with a random seed
      *  measure time, space, points
      */
     private static void playScrabble(ScrabblePlayer player, 
-                 ArrayList<String> dictionary,
-                 int numOfGames, long seed)
+			     ArrayList<String> dictionary,
+			     int numOfGames, long seed)
     {
         System.out.println("Playing Scrabble...");
 
-    int       totalPoints = 0;
-    long      totalElapsedTime = 0;
-    char[][]  board = new char[15][15];
-    char[]    availableLetters = new char[7]; 
-    Random    rand = new Random(seed);
+	int       totalPoints = 0;
+	long      totalElapsedTime = 0;
+	char[][]  board = new char[15][15];
+	char[]    availableLetters = new char[7]; 
+	Random    rand = new Random(seed);
     
-    // points on board: https://en.wikipedia.org/wiki/Scrabble
-    HashMap<String, String> scoresOnBoard = createBoardScore();
-    // points of tiles: https://en.wikipedia.org/wiki/Scrabble_letter_distributions
-    int[] tileScore = new int[] { 0, 1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3, 
-                                  1, 1, 3, 10,1, 1, 1, 1, 4, 4, 8, 4, 10};
-    
-    for (int game = 0; game < numOfGames; game++)
-        {
-        //to do: initialize the board with spaces
-        //       add a random word of at most length 7 from the dictionary
+	for (int game = 0; game < numOfGames; game++)
+	    {
+		//to do: initialize the board with spaces
+		//       add a random word of at most length 7 from the dictionary
         ScrabbleWord initialWord = generateBoard(board, dictionary, rand);
 
-        //to do: Randomly pick 7 letters according to the distribution of letters in
-        //       the wiki page in the assignment
+		//to do: Randomly pick 7 letters according to the distribution of letters in
+		//       the wiki page in the assignment
         generateAvailableLetters(availableLetters, rand);
         
         
-        // the player might change board and/or availableLetters, give the player a clone
-        char[][] boardClone = board.clone();  
-        char[]   availableLettersClone = availableLetters.clone();
+		// the player might change board and/or availableLetters, give the player a clone
+		char[][] boardClone = board.clone();  
+		char[]   availableLettersClone = availableLetters.clone();
 
-        //Calculate the time taken to find the words on the board
-        long startTime = bean.getCurrentThreadCpuTime();
-        //Play the game of Scrabble and find the words
-        ScrabbleWord playerWord = player.getScrabbleWord(boardClone, availableLettersClone);
+		//Calculate the time taken to find the words on the board
+		long startTime = bean.getCurrentThreadCpuTime();
+		//Play the game of Scrabble and find the words
+		ScrabbleWord playerWord = player.getScrabbleWord(boardClone, availableLettersClone);
         
-        long endTime = bean.getCurrentThreadCpuTime();
+		long endTime = bean.getCurrentThreadCpuTime();
 
-        //System.out.println(endTime - startTime);
-        if ((endTime - startTime)/1.0E9 > 1)  // longer than 1 second
-            {
-            System.err.println("player.getScrabbleWord() exceeded 1 minute");
-            System.exit(-1);
-            }
-        totalElapsedTime += (endTime - startTime);
+		//System.out.println(endTime - startTime);
+		if ((endTime - startTime)/1.0E9 > 1)  // longer than 1 second
+		    {
+			System.err.println("player.getScrabbleWord() exceeded 1 second");
+			System.exit(-1);
+		    }
+		totalElapsedTime += (endTime - startTime);
 
-        //Calculate points for the words found
-        totalPoints += calculatePoints(playerWord, initialWord, board, availableLetters, 
-                                       dictionary, scoresOnBoard, tileScore);
+		//Calculate points for the words found
+		totalPoints += calculatePoints(playerWord, initialWord, board, availableLetters, dictionary);
         //System.out.println("Total: " + totalPoints);
-        }
+	    }
 
         reportPerformance(totalPoints, totalElapsedTime, peakMemoryUsage(), 
                           numOfGames);
@@ -278,8 +228,14 @@ public class EvalScrabblePlayer {
      * based on time, space, and points
      */
     private static void reportPerformance(int totalPoints, long totalElapsedTime, long memory, 
-                  int numOfGames)
+				  int numOfGames)
     {
+        // avoid divided by zero
+        if (totalElapsedTime <= 0)
+            totalElapsedTime = 1;
+        if (memory <= 0)
+            memory = 1;
+        
         double avgPoints = totalPoints / numOfGames;
         System.out.printf("Average Points: %.4f\n", avgPoints);
 
@@ -307,90 +263,122 @@ public class EvalScrabblePlayer {
      * to do:
      *
      * Checks if the word is valid and assigns positive points for valid word and negative points for invalid word
-     *
+     * 
      * @param playerWord word returned by the player
      * @param board The exisiting board before the adding the playerWord
      * @param dictionary dictionary for validity check
      * @return Positive or negative points for the word
      */
     private static int calculatePoints(ScrabbleWord playerWord, ScrabbleWord initialWord, char[][] board,
-                                       char[] availableLetters, ArrayList<String> dictionary,
-                                       HashMap<String, String> scoresOnBoard, int[] tilePoints) 
+                                       char[] availableLetters, ArrayList<String> dictionary) 
     {
         // check if it is a valid word
-        if (!validPlayWord(playerWord, initialWord, board, availableLetters, dictionary))
+        ScrabbleWord returnWord = validPlayWord(playerWord, initialWord, board, availableLetters, dictionary);        
+        if (returnWord == null)
             return 0;
         
-        // calculate the points based on wiki        
+        // calculate the points based on wiki
+        int totalPoints = singleWordPoints(playerWord);
+        
+        // if a new word is created
         String playerW = playerWord.getScrabbleWord();
+        if (!returnWord.getScrabbleWord().equals(playerW))
+            totalPoints += singleWordPoints(returnWord);
+        
+        return totalPoints;
+    }
+    
+    
+    // compute the points for a single word
+    private static int singleWordPoints(ScrabbleWord playerWord)
+    {        
         int totalScore = 0, bonusForWord = 1;
+        
+        String playerW = playerWord.getScrabbleWord();
         int rowID = playerWord.getStartRow();
         int colID = playerWord.getStartColumn();
+        
         for (int i = 0; i < playerW.length(); i++)
         {
             char letterInWord = playerW.charAt(i);
             
-            // if the letter is '_', then zero point for that, no need to calculate;
-            // otherwise find the points of this letter and the bonus at this position
-            if (letterInWord != '_')
+            // find the score for this letter
+            int letterPoints = 0;
+            for (char tempChar: LETTERS)
             {
-                // find the score for this letter
-                int letterPoints = tilePoints[(int)letterInWord - 64]; // (int)'A' = 65
-                
-                //System.out.printf("The %d th letter of %s is %c: %d points, ", i, playerW, letterInWord, letterPoints);
-                
-                if (playerWord.getOrientation() == 'h')
-                    colID = colID + i;
-                else
-                    rowID = rowID + i;
-                
-                //System.out.printf("pos (row, col): (%d, %d), ", rowID, colID);
-                // find the score on board
-                String key = Integer.toString(rowID) + Integer.toString(colID);
-                if (scoresOnBoard.containsKey(key))
-                {
-                    // double/triple letter score
-                    if (scoresOnBoard.get(key).equals("2L"))
-                        letterPoints = letterPoints * 2;
-                    else if (scoresOnBoard.get(key).equals("3L"))
-                        letterPoints = letterPoints * 3;
-                    // double/triple word score
-                    else if (scoresOnBoard.get(key).equals("2W"))
-                        bonusForWord = bonusForWord * 2;
-                    else if (scoresOnBoard.get(key).equals("3W"))
-                        bonusForWord = bonusForWord * 3;
-                    //System.out.printf("bonus is %s%n", scoresOnBoard.get(key));
-                }
-                else
-                    //System.out.printf("no bonus.%n");
-                
-                // sum them up
-                totalScore = totalScore + letterPoints;
-                
+                if (tempChar == letterInWord)
+                    letterPoints = LETTERS_SCORE[tempChar];
             }
+            
+            //System.out.printf("The %d th letter of %s is %c: %d points, ", i, playerW, letterInWord, letterPoints);
+            
+            //System.out.printf("pos (row, col): (%d, %d), ", rowID, colID);
+            // find the score on board
+            String position = Integer.toString(rowID) + Integer.toString(colID);
+            String bonusFromBoard = "";
+            
+            // find the score on board if exist
+            for (int j = 0; j < BONUS_POS.length; j++)
+            {
+                if (position.equals(BONUS_POS[j]))
+                    bonusFromBoard = BONUS[j];
+            }
+            
+            // double/triple letter score
+            if (bonusFromBoard.equals("2L"))
+                letterPoints = letterPoints * 2;
+            else if (bonusFromBoard.equals("3L"))
+                letterPoints = letterPoints * 3;
+            // double/triple word score
+            else if (bonusFromBoard.equals("2W"))
+                bonusForWord = bonusForWord * 2;
+            else if (bonusFromBoard.equals("3W"))
+                bonusForWord = bonusForWord * 3;
+            else
+                bonusForWord = bonusForWord * 1;
+            
+            // move to the next cell
+            if (playerWord.getOrientation() == 'h')
+                colID++;
+            else
+                rowID++;
+            
+            // sum them up
+            totalScore = totalScore + letterPoints;
+                
         }
         // final score must multiply the bonus
         totalScore = totalScore * bonusForWord;
         
+        // return
         return totalScore;
     }
-    
 
     /**
     * function to check if the play word is valid or not
     * @param playWord: a ScrabbleWord that the player wants to add
-    * @param board: The exisiting board before the adding the playerWord
-    * @param dictionary: dictionary for validity check
-    * @return valid: boolean value
+    * @param board: The initial board before the adding the playerWord
+    * @param dictionary: dictionary to check if the word is in the dictionary
+    * @return ScrabbleWord: if invalid, return empty string;
+    *                       if valid, return same playerWord if no new word created
+    *                                 or return the new Word
     */
-    private static boolean validPlayWord(ScrabbleWord playWord, ScrabbleWord initialWord, char[][] board,
+    private static ScrabbleWord validPlayWord(ScrabbleWord playWord, ScrabbleWord initialWord, char[][] board,
                                  char[] availableLetters, ArrayList<String> dictionary)
     {
+        // default return value
+        ScrabbleWord returnWord = playWord;
+        
+        // Invalid case 0: empty string
+        if (playWord.getScrabbleWord().equals(""))
+            return null;
+        
         // Invalid case 1: the playWord is not in the dictionary
         if (!isInDictionary(playWord.getScrabbleWord(), dictionary))
         {
             //System.out.println(playWord.getScrabbleWord() + " not in the dictionary.");
-            return false;
+            //return false;
+            return null;
         }
         
         //////////////////////////////////////////////////////////////////////////
@@ -403,152 +391,19 @@ public class EvalScrabblePlayer {
         if (maxIndex > board.length)
         {
             //System.out.println("out of boundary");
-            return false;
+            //return false;
+            return null;
         }
         // startRow/startColumn less than zero
         else if (playWord.getStartRow() < 0 || playWord.getStartColumn() < 0)
         {
             //System.out.println("out of boundary");
-            return false;
-        }
-        
-        ////////////////////////////////////////////////////////////////////////////////
-        // Invalid case 3: connection
-        String initialW = initialWord.getScrabbleWord();
-        String playW = playWord.getScrabbleWord();
-        // same orientation, check if playWord contains initialWord
-        if (playWord.getOrientation() == initialWord.getOrientation())
-        {
-            if (!playW.contains(initialW))
-            {
-                //System.out.println("Can not connected to each other");
-                return false;
-            }
-        }
-        // different orientation, check the intersection
-        else
-        {
-            int pStartRow = playWord.getStartRow(), pStartCol = playWord.getStartColumn();
-            int iStartRow = initialWord.getStartRow(), iStartCol = initialWord.getStartColumn();
-            int pEndRow, pEndCol, iEndRow, iEndCol;
-            // playWord is horizontal
-            if (playWord.getOrientation() == 'h')
-            {
-                pEndRow = pStartRow;
-                pEndCol = pStartCol + playW.length() - 1;
-                // initial word is vertical
-                iEndRow = iStartRow + initialW.length() - 1;
-                iEndCol = iStartCol;
-                
-                // if connect, then (pStartCol - 1 <= iStartCol <= pEndCol + 1) AND
-                //                  (iStartRow - 1 <= pStartRow <= iEndRow + 1)
-                if ((pStartCol - 1 <= iStartCol && iStartCol <= pEndCol + 1) && 
-                    (iStartRow - 1 <= pStartRow && pStartRow <= iEndRow + 1))
-                {
-                    // within the range
-                    if ((pStartCol <= iStartCol && iStartCol <= pEndCol) &&
-                        (iStartRow <= pStartRow && pStartRow <= iEndRow))
-                    {
-                        // check the intersection part has the same letter or not
-                        if (playW.charAt(iStartCol - pStartCol) != initialW.charAt(pStartRow - iStartRow))
-                        {
-                            //System.out.println("Invalid connection");
-                            return false;
-                        }
-                    }
-                    // boundary case
-                    else if ((pStartCol <= iStartCol && iStartCol <= pEndCol) ||
-                             (iStartRow <= pStartRow && pStartRow <= iEndRow))
-                    {
-                        String newWord;
-                        
-                        // intial word is the head of the new word
-                        if (iStartCol == pStartCol - 1)
-                            newWord = initialW.substring(pStartRow - iStartRow, pStartRow - iStartRow + 1) + playW;
-                        // initial word is the tail of the new word
-                        else if (iStartCol == pEndCol + 1)
-                            newWord = playW + initialW.substring(pStartRow - iStartRow, pStartRow - iStartRow + 1);
-                        // player word is the head of the new word
-                        else if (pStartRow == iStartRow - 1)
-                            newWord = playW.substring(iStartCol - pStartCol, iStartCol - pStartCol + 1) + initialW;
-                        else
-                            newWord = initialW + playW.substring(iStartCol - pStartCol, iStartCol - pStartCol + 1);
-                        
-                        //System.out.println(newWord);
-                        if (!isInDictionary(newWord, dictionary))
-                            return false;
-                    }
-                    else
-                        return false;
-                }
-                // no connection
-                else
-                {
-                    //System.out.println("not connected to each other");
-                    return false;
-                }
-            }
-            // playWord is vertical
-            else
-            {
-                pEndRow = pStartRow + playW.length() - 1;
-                pEndCol = pStartCol;
-                // initial word is horizontal
-                iEndRow = iStartRow;
-                iEndCol = iStartCol + initialW.length() - 1;
-                // if connect, then (pStartRow - 1 <= iStartRow <= pEndRow + 1) AND
-                //                  (iStartCol - 1 <= pStartCol <= iEndCol + 1)
-                if ((pStartRow - 1 <= iStartRow && iStartRow <= pEndRow + 1) && 
-                    (iStartCol - 1 <= pStartCol && pStartCol <= iEndCol + 1))
-                {
-                    // within the range
-                    if ((pStartRow <= iStartRow && iStartRow <= pEndRow) && 
-                        (iStartCol <= pStartCol && pStartCol <= iEndCol))
-                    {
-                        // check the intersection part has the same letter or not
-                        if (playW.charAt(iStartRow - pStartRow) != initialW.charAt(pStartCol - iStartCol))
-                        {
-                            //System.out.println("Invalid connection");
-                            return false;
-                        }
-                    }
-                    // boundary case
-                    else if ((pStartRow <= iStartRow && iStartRow <= pEndRow) ||
-                             (iStartCol <= pStartCol && pStartCol <= iEndCol))
-                    {
-                        String newWord;
-                        
-                        // intial word is the head of the new word
-                        if (iStartRow == pStartRow - 1)
-                            newWord = initialW.substring(pStartCol - iStartCol, pStartCol - iStartCol + 1) + playW;
-                        // initial word is the tail of the new word
-                        else if (iStartRow == pEndRow + 1)
-                            newWord = playW + initialW.substring(pStartCol - iStartCol, pStartCol - iStartCol + 1);
-                        // player word is the head of the new word
-                        else if (pStartCol == iStartCol - 1)
-                            newWord = playW.substring(iStartRow - pStartRow, iStartRow - pStartRow + 1) + initialW;
-                        // player word is the tail of the new word
-                        else
-                            newWord = initialW + playW.substring(iStartRow - pStartRow, iStartRow - pStartRow + 1);
-                        
-                        //System.out.println(newWord);
-                        if (!isInDictionary(newWord, dictionary))
-                            return false;
-                    }
-                    else
-                        return false;
-                }
-                // no connected to each other
-                else
-                {
-                    //System.out.println("not connected to each other");
-                    return false;
-                }
-            }
+            //return false;
+            return null;
         }
         
         ///////////////////////////////////////////////////////////////////////////////
-        // Invalid case 4: the playWord use letters that are not in availableLetters
+        // Invalid case 3: the playWord use letters that are not in availableLetters
         // Before checking, must remove the intersection part of the playWord and the starting word        
         // remove the intersection part
         String additionLetters = findAdditionLetters(initialWord, playWord);
@@ -575,11 +430,38 @@ public class EvalScrabblePlayer {
         }
         // not empty means some letters that are not in availableLetters are used
         if (!playerLetters.isEmpty())
-            return false;
+            //return false;
+            return null;
         
-        // otherwise, return true
-        return true;
+        ////////////////////////////////////////////////////////////////////////////////
+        // Invalid case 4: connection
+        String initialW = initialWord.getScrabbleWord();
+        String playW = playWord.getScrabbleWord();
+        // same orientation, playWord is valid only when it contains initialWord
+        if (playWord.getOrientation() == initialWord.getOrientation())
+        {
+            if (!playW.contains(initialW))
+                return null;
+        }
+        // different orientation, two valid cases: 1. they are intersecting
+        //                                         2. one letter in play word extends the
+        //                                            initialWord at the end or in the front
+        else
+        {
+            // if two words are intersecting, return playWord
+            if (!isIntersecting(playWord, initialWord))
+                return null;
+            // check if it is case 2
+            // isExtending() return: 1. null when invalid
+            //                       2. a new Word
+            else
+                returnWord = isExtending(playWord, initialWord, dictionary);
+        }
+        
+        // all the cases have been checked, return
+        return returnWord;
     }
+
     
     // check if a word is in the dictionary
     private static boolean isInDictionary(String word, ArrayList<String> dictionary)
@@ -653,6 +535,194 @@ public class EvalScrabblePlayer {
     
     
     /**
+    * function to check if two words are intersecting
+    * @param playWord: a ScrabbleWord that the player wants to add
+    * @param initialWord: a ScrabbleWord in the board at the beginning
+    * @return boolean: true when intersecting
+    */
+    private static boolean isIntersecting(ScrabbleWord playWord, ScrabbleWord initialWord)
+    {
+        // initialize the return value
+        boolean intersection = false;
+        // string of the two ScrabbleWord objects
+        String playW = playWord.getScrabbleWord();
+        String initialW = initialWord.getScrabbleWord();
+        
+        // start row and column for the playWord
+        int pStartRow = playWord.getStartRow(), pStartCol = playWord.getStartColumn();
+        
+        // start row and column for the initialWord
+        int iStartRow = initialWord.getStartRow(), iStartCol = initialWord.getStartColumn();
+        
+        // end row and column for both playWord and initialWord
+        // different according to the orientation
+        int pEndRow, pEndCol, iEndRow, iEndCol;
+        
+        // when playWord is horizontal, then initialWord is vertical
+        if (playWord.getOrientation() == 'h')
+        {
+            // for play word,
+            // endRow = startRow, endCol = startCol + playWord.length - 1
+            pEndRow = pStartRow;
+            pEndCol = pStartCol + playW.length() - 1;
+            
+            // for initial word, it is vertical
+            // endCol = startCol, endRow = StartCol + initialWord.length - 1
+            iEndRow = iStartRow + initialW.length() - 1;
+            iEndCol = iStartCol;
+            
+            // if they are intersecting, then (pStartCol <= iStartCol <= pEndCol) AND
+            //                                (iStartRow <= pStartRow <= iEndRow)
+            if ((pStartCol <= iStartCol && iStartCol <= pEndCol) && 
+                (iStartRow <= pStartRow && pStartRow <= iEndRow))
+            {
+                // check if the letters are then same
+                if (playW.charAt(iStartCol - pStartCol) == initialW.charAt(pStartRow - iStartRow))
+                    intersection = true;
+                else
+                    intersection = false;
+            }
+            // not intersecting
+            else
+                intersection = false;
+        }
+        // when playWord is vertical, then initialWord is horizontal
+        else
+        {
+            // since playWord is vertical, then:
+            // endRow = startRow + playWord.length - 1, endCol = startCol
+            pEndRow = pStartRow + playW.length() - 1;
+            pEndCol = pStartCol;
+            
+            // for initial word, it is horizontal
+            // endCol = startCol + initialWord.length - 1, endRow = StartCol
+            iEndRow = iStartRow;
+            iEndCol = iStartCol + initialW.length() - 1;
+            
+            // if they are intersecting, then (pStartRow <= iStartRow <= pEndRow) AND
+            //                                (iStartCol <= pStartCol <= iEndRow)
+            if ((pStartRow <= iStartRow) && (iStartRow <= pEndRow) &&
+                (iStartCol <= pStartCol) && (pStartCol <= iEndRow))
+            {
+                // check if the letters are then same 
+                if (playW.charAt(iStartRow - pStartRow) == initialW.charAt(pStartCol - iStartCol))
+                    intersection = true;
+                else
+                    intersection = false;
+            }
+            // not intersecting
+            else
+                intersection = false;
+        }
+        
+        return intersection;
+    }
+    
+    /**
+    * function to check if playWord extends initialWord
+    * @param playWord: a ScrabbleWord that the player wants to add
+    * @param initialWord: a ScrabbleWord in the board at the beginning
+    * @param dictionary
+    * @return a ScrabbleWord can be a newWord or null
+    */
+    private static ScrabbleWord isExtending(ScrabbleWord playWord, ScrabbleWord initialWord,
+                                            ArrayList<String> dictionary)
+    {
+        ScrabbleWord newWord;
+        String playW = playWord.getScrabbleWord();
+        String initialW = initialWord.getScrabbleWord();
+        
+        // start row and column for the playWord
+        int pStartRow = playWord.getStartRow(), pStartCol = playWord.getStartColumn();
+        
+        // start row and column for the initialWord
+        int iStartRow = initialWord.getStartRow(), iStartCol = initialWord.getStartColumn();
+        
+        // end row and column for both playWord and initialWord
+        // different according to the orientation
+        int pEndRow, pEndCol, iEndRow, iEndCol;
+        
+        // when playWord is horizontal, then initialWord is vertical
+        if (playWord.getOrientation() == 'h')
+        {
+            // for play word,
+            // endRow = startRow, endCol = startCol + playWord.length - 1
+            pEndRow = pStartRow;
+            pEndCol = pStartCol + playW.length() - 1;
+            
+            // for initial word, it is vertical
+            // endCol = startCol, endRow = StartCol + initialWord.length - 1
+            iEndRow = iStartRow + initialW.length() - 1;
+            iEndCol = iStartCol;
+            
+            // if playWord extends intialWord, then (pStartCol <= iStartCol <= pEndCol) AND
+            //                                      (pStartRow == iStartRow - 1 || pStartRow == iEndRow + 1)
+            if ((pStartCol <= iStartCol && iStartCol <= pEndCol) && 
+                (pStartRow == iStartRow - 1 || pStartRow == iEndRow + 1))
+            {
+                // find the letter in playWord that extends the initialWord
+                String extraLetter = Character.toString(playW.charAt(iStartCol - pStartCol));
+                
+                // this letter can be the head or the tail of the new word
+                String newWordString;
+                if (pStartRow == iStartRow - 1) // head
+                    newWordString = extraLetter + initialW;
+                else
+                    newWordString = initialW + extraLetter;
+                // in the dictionary?
+                if (!isInDictionary(playWord.getScrabbleWord(), dictionary))
+                    newWord = null;
+                else
+                    newWord = new ScrabbleWord(newWordString, iStartRow - 1, iStartRow, 'v');
+            }
+            // invalid
+            else
+                newWord = null;
+        }
+        // when playWord is vertical, then initialWord is horizontal
+        else
+        {
+            // since playWord is vertical, then:
+            // endRow = startRow + playWord.length - 1, endCol = startCol
+            pEndRow = pStartRow + playW.length() - 1;
+            pEndCol = pStartCol;
+            
+            // for initial word, it is horizontal
+            // endCol = startCol + initialWord.length - 1, endRow = StartCol
+            iEndRow = iStartRow;
+            iEndCol = iStartCol + initialW.length() - 1;
+            
+            // if they are intersecting, then (pStartRow <= iStartRow <= pEndRow) AND
+            //                                (iStartCol <= pStartCol <= iEndRow)
+            if ((pStartRow <= iStartRow) && (iStartRow <= pEndRow) &&
+                (pStartCol == iStartCol - 1) || (pStartCol == iEndCol + 1))
+            {
+                // find the letter in playWord that extends the initialWord
+                String extraLetter = Character.toString(playW.charAt(iStartRow - pStartRow));
+                
+                // this letter can be the head or the tail of the new word
+                String newWordString;
+                if (pStartCol == iStartCol - 1) // head
+                    newWordString = extraLetter + initialW;
+                else
+                    newWordString = initialW + extraLetter;
+                // in the dictionary?
+                if (!isInDictionary(playWord.getScrabbleWord(), dictionary))
+                    newWord = null;
+                else
+                    newWord = new ScrabbleWord(newWordString, iStartCol - 1, iStartCol, 'h');
+            }
+            // invalid
+            else
+                newWord = null;
+        }
+        
+        // finally, return the word
+        return newWord;
+    }
+    
+    
+    /**
      * Setup the board
      */
     private static ScrabbleWord generateBoard(char[][] board, ArrayList<String> dictionary, Random rand)
@@ -680,9 +750,10 @@ public class EvalScrabblePlayer {
             // for example, if word.length = 6, then Max(colPos) = 9 = 15 - 6 + 1
             colPos = rand.nextInt(board[0].length - initialWord.length() + 2);
             // horizontal, so each letter has the same rowID
-            for (int i = colPos; i < initialWord.length(); i++)
+            for (int i = 0; i < initialWord.length(); i++)
             {
-                board[rowPos][i] = initialWord.charAt(i);
+                board[rowPos][colPos] = initialWord.charAt(i);
+                colPos++;
             }
         }
         // otherwise, vertical
@@ -693,9 +764,10 @@ public class EvalScrabblePlayer {
             colPos = rand.nextInt(board[0].length);
             rowPos = rand.nextInt(board.length - initialWord.length() + 1);
             // vertical, so each letter has the same colID
-            for (int i = rowPos; i < initialWord.length(); i++)
+            for (int i = 0; i < initialWord.length(); i++)
             {
-                board[i][colPos] = initialWord.charAt(i);
+                board[rowPos][colPos] = initialWord.charAt(i);
+                rowPos++;
             }
         }
         
@@ -757,19 +829,19 @@ public class EvalScrabblePlayer {
     private static long peakMemoryUsage() 
     {
 
-    List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
-    long total = 0;
-    for (MemoryPoolMXBean memoryPoolMXBean : pools)
-        {
-        if (memoryPoolMXBean.getType() == MemoryType.HEAP)
-        {
-            long peakUsage = memoryPoolMXBean.getPeakUsage().getUsed();
-            // System.out.println("Peak used for: " + memoryPoolMXBean.getName() + " is: " + peakUsage);
-            total = total + peakUsage;
-        }
-        }
+	List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
+	long total = 0;
+	for (MemoryPoolMXBean memoryPoolMXBean : pools)
+	    {
+		if (memoryPoolMXBean.getType() == MemoryType.HEAP)
+		{
+		    long peakUsage = memoryPoolMXBean.getPeakUsage().getUsed();
+		    // System.out.println("Peak used for: " + memoryPoolMXBean.getName() + " is: " + peakUsage);
+		    total = total + peakUsage;
+		}
+	    }
 
-    return total;
+	return total;
     }
 
 }

@@ -25,6 +25,14 @@ public class ScrabblePlayer
     char[] alphabet = new char[] {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
             'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
     
+    private static final int[] LETTERS_SCORE =
+        {0, 1, 3, 3, 2, 1, 4, 2, 4, 1, 8, 5, 1, 3,
+         1, 1, 3, 10,1, 1, 1, 1, 4, 4, 8, 4, 10 };
+    
+    private static final char[] LETTERS =
+        {'_', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+         'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
+        
     // initialize ScrabblePlayer with a file of English words
     public ScrabblePlayer(String wordFile) throws FileNotFoundException
     {
@@ -79,18 +87,7 @@ public class ScrabblePlayer
             
             
         }
-        /*
-        //parseDictionary();
-        System.out.println(combinations.size());
-        System.out.println(one.size());
-        System.out.println(two.size());
-        System.out.println(three.size());
-        System.out.println(four.size());
-        System.out.println(five.size());
-        System.out.println(six.size());
-        System.out.println(seven.size());
-        System.out.println(other.size());
-        */
+
         //************************************************************************CHANGES********************************
         //ArrayList<Node> children = root.getChildren().get(25).getChildren().get(0).getChildren();
         //for (Node e : children) {
@@ -101,9 +98,6 @@ public class ScrabblePlayer
          * I belive our goal is to build data structures in the constructor in under 5 minutes, that will then allow us to generate the best
          * word in under 1 second.
          */
-        
-        
-        
         
         
         
@@ -151,7 +145,6 @@ public class ScrabblePlayer
         */
         
         /*
-         * lines 76 - 101
          * determines what and the opponent's word is, the orientation, and where it is located on the board
          * Then it creates that words as a ScrabbleWord object to hold all that information.
          */
@@ -235,17 +228,65 @@ public class ScrabblePlayer
         }
         
         
-        
-        //Prints pertinent information
-        System.out.println(opponent.getScrabbleWord());
-        for (int i = 0; i < availableLetters.length; i++) {
-            System.out.println(availableLetters[i]);
-        }
-        System.out.printf("ArrayList size:%s%n", validWordsPlusOppWord.size());
+        int maxWordScore = 0;
+        String maxWord = "";
+        int arrayListNum = -1;
         for (int i = 0; i < validWordsPlusOppWord.size(); i++) {
-            //for (int j = 0; j < validWordsPlusOppWord.get(i))
-            System.out.println(validWordsPlusOppWord.get(i).size());
+            for (int j = 0; j < validWordsPlusOppWord.get(i).size(); j++) {
+                int currentWordScore = 0;
+                
+                for (int k = 0; k < validWordsPlusOppWord.get(i).get(j).length(); k++) {
+                    char letterInWord = validWordsPlusOppWord.get(i).get(j).charAt(k);
+                    
+                    for (char tempChar: LETTERS)
+                    {
+                        if (tempChar == letterInWord)
+                            currentWordScore += LETTERS_SCORE[k];
+                    }
+                }
+                if (currentWordScore > maxWordScore) {
+                    maxWordScore = currentWordScore;
+                    maxWord = validWordsPlusOppWord.get(i).get(j);
+                    arrayListNum = j;
+                }
+                
+            }
         }
+        
+        System.out.printf("LargestWord: %s%nValue: %d%n", maxWord, maxWordScore);
+        
+        int playerStartRow;
+        int playerStartCol;
+        boolean found = false;
+        /*
+        if (opponent.getOrientation() == 'h') {
+            playerStartCol
+            for (int i = 0; i < maxWord.length(); i++) {
+                for (int j = 0; j < opponent.getScrabbleWord().length(); j++) {
+                    if (maxWord.charAt(i) == opponent.getScrabbleWord().charAt(j)) {
+                        found = true;
+                        playerStartCol = 
+                    }
+                }
+                if (found)
+                    break;
+            }
+        } else {
+            playerStartRow = opponent.getStartRow() + arrayListNum
+            for (int i = 0; i < maxWord.length(); i++) {
+                for (int j = 0; j < opponent.getScrabbleWord().length(); j++) {
+                    if (maxWord.charAt(i) == opponent.getScrabbleWord().charAt(j)) {
+                        found = true;
+                        playerStartCol = 
+                    }
+                }
+                if (found)
+                    break;
+            }
+        }
+        */
+        
+        
         //////////////////////////////////////////////////
         //System.out.println(opponent.getScrabbleWord());
         
@@ -256,9 +297,7 @@ public class ScrabblePlayer
         
         //System.out.println(allAvailableValidWords.size());
         
-        System.out.println(opponent.getStartRow() + " " + opponent.getStartColumn());
-        
-        return  new ScrabbleWord("WON", 8, 4, 'h');
+        return  new ScrabbleWord("OWNER", 8, 5, 'h');
     }
 
     
@@ -352,7 +391,6 @@ public class ScrabblePlayer
         return false;
     }
     
-    
     static class Node {
         String validWord;
         char letter;
@@ -382,24 +420,7 @@ public class ScrabblePlayer
     }
     
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
     
     
 }

@@ -26,60 +26,62 @@ public class ScrabblePlayer
     // initialize ScrabblePlayer with a file of English words
     public ScrabblePlayer(String wordFile) throws FileNotFoundException
     {
-        //Read in the word file and store the created dictionary in the "dictionary" global field
+        
         Scanner dictFile = new Scanner(new File(wordFile));
         root = new Node(' ', null);
         while (dictFile.hasNext()) {
-            ArrayList<Node> children = root.getChildren();
+            
             String nextWord = dictFile.nextLine().toUpperCase();
-            for (int charCtr = 0; charCtr < nextWord.length(); charCtr++) {
-                //Nothing has been added to the root
-                if (root.getChildren() == null) {
-                    root.appendChild(new Node(nextWord.charAt(0), nextWord));
-                } else {
-                    //Chilren of root is not equal to null
-                    boolean done = false;
-                    
-                    
-                    //Bolean flag to see if the char is already a child
-                    boolean doesExist = false;
-                    for (int childCtr = 0; childCtr < children.size(); childCtr++) {
-                        if (nextWord.charAt(charCtr) == children.get(childCtr).getLetter()) {
-                            if (charCtr == (nextWord.length() - 1)) {
-                                
-                                children.get(childCtr).validWord = nextWord;
-                            }
-                            children = children.get(childCtr).getChildren();
-                            doesExist = true;
-                            break;
-                        }
-                    }
-                    
-                    //If the character is not a child yet, add it
-                    if (!doesExist) {
-                        if (charCtr == (nextWord.length() - 1)) {
-                            children.add(new Node (nextWord.charAt(charCtr), nextWord));
-                        } else {
-                            children.add(new Node (nextWord.charAt(charCtr), null));
-                        }
-                        
-                        //Get the children of the node that was just added
-                        children = children.get(children.size()-1).getChildren();
-                        
-                    }
-                        
-                        
+            if (nextWord.length() < 15) {
+                ArrayList<Node> children = root.getChildren();
+                for (int charCtr = 0; charCtr < nextWord.length(); charCtr++) {
+                    //Nothing has been added to the root
+                    if (root.getChildren() == null) {
+                        root.appendChild(new Node(nextWord.charAt(0), nextWord));
+                    } else {
+                        //Chilren of root is not equal to null
 
-                    
+                        //Bolean flag to see if the char is already a child
+                        boolean doesExist = false;
+                        for (int childCtr = 0; childCtr < children.size(); childCtr++) {
+                            if (nextWord.charAt(charCtr) == children.get(childCtr).getLetter()) {
+                                if (charCtr == (nextWord.length() - 1)) {
+                                    
+                                    children.get(childCtr).validWord = nextWord;
+                                }
+                                children = children.get(childCtr).getChildren();
+                                doesExist = true;
+                                break;
+                            }
+                        }
+                        
+                        //If the character is not a child yet, add it
+                        if (!doesExist) {
+                            if (charCtr == (nextWord.length() - 1)) {
+                                children.add(new Node (nextWord.charAt(charCtr), nextWord));
+                            } else {
+                                children.add(new Node (nextWord.charAt(charCtr), null));
+                            }
+                            
+                            //Get the children of the node that was just added
+                            children = children.get(children.size()-1).getChildren();
+                            
+                        }
+                            
+                            
+
+                        
+                    }
                 }
             }
             
+            
         }
         //************************************************************************CHANGES********************************
-        ArrayList<Node> children = root.getChildren().get(25).getChildren().get(0).getChildren();
-        for (Node e : children) {
-            System.out.println(e.getWord());
-        }
+        //ArrayList<Node> children = root.getChildren().get(25).getChildren().get(0).getChildren();
+        //for (Node e : children) {
+        //    System.out.println(e.getWord());
+        //}
         /*
          * From the pdf file: "The constructor allows you to process the data and construct data structures in preparation for identifying words"
          * I belive our goal is to build data structures in the constructor in under 5 minutes, that will then allow us to generate the best
@@ -142,7 +144,6 @@ public class ScrabblePlayer
         for (int row = 0; row < board.length; row++) {
             //Iterate through the cols of each row in the board
             for (int col = 0; col < board[0].length; col++) {
-                //If the current character is not a letter ********(this was confusing, don't question it, it works)********
                 if (Character.getNumericValue(board[row][col]) != -1) {
                     opponentWord = opponentWord + board[row][col];
                     
@@ -162,25 +163,40 @@ public class ScrabblePlayer
         }
         ScrabbleWord opponent = new ScrabbleWord(opponentWord, startRow, startCol, opponentOrientation);
         //System.out.println(opponent.getScrabbleWord());
-        //Potential method for choosing the longest word we can create
-        String longestWord = getLongestWordPossible(availableLetters);
         
-
+        //Test for the checkValidity() method
+        //String word = "ETHICS";
+        //System.out.println(checkValidity(word));
+        
+        
         return  new ScrabbleWord("MYWORD", 0, 0, 'h');
     }
 
-    /*
-     * Description:
-     *  getLongestWordPossible will take the available letters, and go through the dictionary to determine
-     *  the longest word we can could create that still conforms to the rules laid out in the assignment.
-     */
-    String getLongestWordPossible(char[] availableLetters) {
+    boolean checkValidity(String testWord) {
         
-        
-        
-        
-        return "TESTING";
+        ArrayList<Node> currentChildren = root.getChildren();
+        //Node current = currentChildren.get(0);
+        for (int i = 0; i < testWord.length(); i++) {
+            System.out.printf("%s:", testWord.charAt(i));
+            INNER_LOOP:
+            for (int j = 0; j < currentChildren.size(); j++) {
+                System.out.print(currentChildren.get(j).getLetter());
+                if (testWord.charAt(i) == currentChildren.get(j).getLetter()) {
+                    //System.out.println(currentChildren.get(j).getLetter());
+                    if ((currentChildren.get(j).getWord() != null) && currentChildren.get(j).getWord().equals(testWord)) {
+                        System.out.println();
+                        return true;
+                    } else {
+                        currentChildren = currentChildren.get(j).getChildren();
+                        break INNER_LOOP;
+                    }
+                }
+            }
+            System.out.println();
+        }
+        return false;
     }
+    
     
     static class Node {
         String validWord;

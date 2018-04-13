@@ -103,7 +103,7 @@ public class EvalScrabblePlayer {
         }
 
         //Default seed if second argument is not passed
-        long seed = 123456789;
+        long seed = 123456788;
         if ((args.length == 2) || (args.length == 3)) {
             seed = Long.parseLong(args[1]);
         }
@@ -161,7 +161,7 @@ public class EvalScrabblePlayer {
         System.out.println("Pre-processing in seconds (not part of performance): " + df.format(processingTimeInSec));
         System.out.println("Used memory after pre-processing in bytes (not part of performance): " + peakMemoryUsage());
 
-	return player;
+    return player;
     }
 
 
@@ -170,65 +170,187 @@ public class EvalScrabblePlayer {
      *  measure time, space, points
      */
     private static void playScrabble(ScrabblePlayer player, 
-			     ArrayList<String> dictionary,
-			     int numOfGames, long seed)
+                 ArrayList<String> dictionary,
+                 int numOfGames, long seed)
     {
         System.out.println("Playing Scrabble...");
 
-	int       totalPoints = 0;
-	long      totalElapsedTime = 0;
-	char[][]  board = new char[15][15];
-	char[]    availableLetters = new char[7]; 
-	Random    rand = new Random(seed);
+    int       totalPoints = 0;
+    long      totalElapsedTime = 0;
+    char[][]  board = new char[15][15];
+    char[]    availableLetters = new char[7]; 
+    Random    rand = new Random(seed);
     
-	for (int game = 0; game < numOfGames; game++)
-	    {
-		//to do: initialize the board with spaces
-		//       add a random word of at most length 7 from the dictionary
+    for (int game = 0; game < numOfGames; game++)
+        {
+        //to do: initialize the board with spaces
+        //       add a random word of at most length 7 from the dictionary
         ScrabbleWord initialWord = generateBoard(board, dictionary, rand);
-
-		//to do: Randomly pick 7 letters according to the distribution of letters in
-		//       the wiki page in the assignment
+        
+        //to do: Randomly pick 7 letters according to the distribution of letters in
+        //       the wiki page in the assignment
         generateAvailableLetters(availableLetters, rand);
-        
-        
-		// the player might change board and/or availableLetters, give the player a clone
-		char[][] boardClone = board.clone();  
-		char[]   availableLettersClone = availableLetters.clone();
+                
+        // the player might change board and/or availableLetters, give the player a clone
+        char[][] boardClone = board.clone();
+        char[]   availableLettersClone = availableLetters.clone();
 
-		//Calculate the time taken to find the words on the board
-		long startTime = bean.getCurrentThreadCpuTime();
-		//Play the game of Scrabble and find the words
-		ScrabbleWord playerWord = player.getScrabbleWord(boardClone, availableLettersClone);
+        //Calculate the time taken to find the words on the board
+        long startTime = bean.getCurrentThreadCpuTime();
+        //Play the game of Scrabble and find the words
+        ScrabbleWord playerWord = player.getScrabbleWord(boardClone, availableLettersClone);
         
-		long endTime = bean.getCurrentThreadCpuTime();
+        long endTime = bean.getCurrentThreadCpuTime();
 
-		//System.out.println(endTime - startTime);
-		if ((endTime - startTime)/1.0E9 > 1)  // longer than 1 second
-		    {
-			System.err.println("player.getScrabbleWord() exceeded 1 second");
-			System.exit(-1);
-		    }
-		totalElapsedTime += (endTime - startTime);
+        //System.out.println(endTime - startTime);
+        if ((endTime - startTime)/1.0E9 > 100)  // longer than 1 second
+            {
+            System.err.println("player.getScrabbleWord() exceeded 1 second");
+            System.exit(-1);
+            }
+        totalElapsedTime += (endTime - startTime);
 
-		//Calculate points for the words found
-		totalPoints += calculatePoints(playerWord, initialWord, board, availableLetters, dictionary);
+        //Calculate points for the words found
+        totalPoints += calculatePoints(playerWord, initialWord, board, availableLetters, dictionary);
         //System.out.println("Total: " + totalPoints);
-	    }
+        }
 
         reportPerformance(totalPoints, totalElapsedTime, peakMemoryUsage(), 
                           numOfGames);
     }
 
 
+    /**
+     * Setup the board
+     */
+    private static ScrabbleWord generateBoard(char[][] board, ArrayList<String> dictionary, Random rand)
+    {        
+	// initialize board to spaces
+	for (int row = 0; row < board.length; row++)
+	    for (int col = 0; col < board[0].length; col++)
+		board[row][col] = ' ';
+	
+        // randomly choose a word
+        int randomIndex = rand.nextInt(dictionary.size());
+        String initialWord = dictionary.get(randomIndex);
+        while (initialWord.length() > 7)
+        {
+            randomIndex = rand.nextInt(dictionary.size());
+            initialWord = dictionary.get(randomIndex);
+        }
+        
+        // choose the orientation and position, put the initial word onto the board
+        boolean flipCoin = rand.nextBoolean();
+        char orientation = 'h';
+        int rowPos, colPos;
+        // flipCoin == true, then horizontal
+        if (flipCoin)
+        {
+            orientation = 'h';
+            // randomly choose the rowPos
+            rowPos = rand.nextInt(board.length);
+            // since it is horizontal, rowPos will not change
+            // but colPos cannot not be 15
+            // for example, if word.length = 6, then Max(colPos) = 9 = 15 - 6
+            colPos = rand.nextInt(board[0].length - initialWord.length());
+            // horizontal, so each letter has the same rowID
+            for (int i = 0; i < initialWord.length(); i++)
+            {
+                board[rowPos][colPos] = initialWord.charAt(i);
+                colPos++;
+            }
+        }
+        // otherwise, vertical
+        else
+        {
+            orientation = 'v';
+            // similarly, colPos = 0 ~ 14, rowPos = 0 ~ (15 - word.length)
+            colPos = rand.nextInt(board[0].length);
+            rowPos = rand.nextInt(board.length - initialWord.length());
+            // vertical, so each letter has the same colID
+            for (int i = 0; i < initialWord.length(); i++)
+            {
+                board[rowPos][colPos] = initialWord.charAt(i);
+                rowPos++;
+            }
+        }
+        
+        ScrabbleWord wordOnBoard = new ScrabbleWord(initialWord, rowPos, colPos, orientation);
+        return wordOnBoard;
+    }
+    
+    
+    /**
+    * Haoran: randomly pick up 7 letters to be the available letters
+    *         according to the distribution on wiki page
+    */
+    private static void generateAvailableLetters(char[] availableLetters, Random rand)
+    {
+        // initial distribution (total 100 tiles):
+        // blank:2 A:9 B:2 C:2 D:4 E:12 F:2 G:3 H:2 I:9 J:1 K:1 L:4 M:2
+        //     N:6 O:8 P:2 Q:1 R:6 S:4  T:6 U:4 V:2 W:2 X:1 Y:2 Z:1
+        int[] distribution = {2, 9, 2, 2, 4, 12, 2, 3, 2, 9, 1, 1, 4, 2,
+                              6, 8, 2, 1, 6, 4,  6, 4, 2, 2, 1, 2, 1};
+        
+        char[] allCharacters = {'_', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+        'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
+        
+        int tilesNum = 100;
+        for (int i = 0; i < 7; i++)
+        {
+            int randomNum = rand.nextInt(tilesNum) + 1;
+            tilesNum = tilesNum - 1;
+            
+            // according to the randomNum, find the character
+            int cumulative = 0;
+            int counter = 0;
+            while (randomNum > cumulative)
+            {
+                cumulative += distribution[counter];
+                counter++;
+            }
+            
+            // counter - 1 is the actual index of distribution
+            // which letter is chosen
+            availableLetters[i] = allCharacters[counter - 1];
+            
+            // distribution[counter - 1] should minus 1 because one tile has been picked
+            distribution[counter - 1]--;
+        }
+    }
+    
 
+    /*
+     * return peak memory usage in bytes
+     *
+     * adapted from
+
+     * https://stackoverflow.com/questions/34624892/how-to-measure-peak-heap-memory-usage-in-java 
+     */
+    private static long peakMemoryUsage() 
+    {
+
+    List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
+    long total = 0;
+    for (MemoryPoolMXBean memoryPoolMXBean : pools)
+        {
+        if (memoryPoolMXBean.getType() == MemoryType.HEAP)
+        {
+            long peakUsage = memoryPoolMXBean.getPeakUsage().getUsed();
+            // System.out.println("Peak used for: " + memoryPoolMXBean.getName() + " is: " + peakUsage);
+            total = total + peakUsage;
+        }
+        }
+
+    return total;
+    }
 
     /*
      * report performance of the scrabble player
      * based on time, space, and points
      */
     private static void reportPerformance(int totalPoints, long totalElapsedTime, long memory, 
-				  int numOfGames)
+                  int numOfGames)
     {
         // avoid divided by zero
         if (totalElapsedTime <= 0)
@@ -274,9 +396,10 @@ public class EvalScrabblePlayer {
     {
         // check if it is a valid word
         ScrabbleWord returnWord = validPlayWord(playerWord, initialWord, board, availableLetters, dictionary);        
-        if (returnWord == null)
+        if (returnWord == null) {
+            System.out.println("invalid");
             return 0;
-        
+        }
         // calculate the points based on wiki
         int totalPoints = singleWordPoints(playerWord);
         
@@ -370,13 +493,16 @@ public class EvalScrabblePlayer {
         ScrabbleWord returnWord = playWord;
         
         // Invalid case 0: empty string
-        if (playWord.getScrabbleWord().equals(""))
+        if (playWord.getScrabbleWord().equals("")) {
+            System.out.println("Empty string");
             return null;
+        }
+            
         
         // Invalid case 1: the playWord is not in the dictionary
         if (!isInDictionary(playWord.getScrabbleWord(), dictionary))
         {
-            //System.out.println(playWord.getScrabbleWord() + " not in the dictionary.");
+            System.out.println(playWord.getScrabbleWord() + " not in the dictionary.");
             //return false;
             return null;
         }
@@ -390,14 +516,14 @@ public class EvalScrabblePlayer {
             maxIndex = playWord.getStartRow() + playWord.getScrabbleWord().length() - 1;
         if (maxIndex > board.length)
         {
-            //System.out.println("out of boundary");
+            System.out.println("out of boundary");
             //return false;
             return null;
         }
         // startRow/startColumn less than zero
         else if (playWord.getStartRow() < 0 || playWord.getStartColumn() < 0)
         {
-            //System.out.println("out of boundary");
+            System.out.println("out of boundary");
             //return false;
             return null;
         }
@@ -412,16 +538,20 @@ public class EvalScrabblePlayer {
         ArrayList<String> playerLetters = new ArrayList<String>();        
         for (char i: additionLetters.toCharArray())
             playerLetters.add(Character.toString(i));
-        
+
         ArrayList<String> validLetters = new ArrayList<String>();
-        for (char i: availableLetters)
+        for (char i: availableLetters) {
+            System.out.printf("validLetters: %s%n", Character.toString(i));
             validLetters.add(Character.toString(i));
+        }
+            
         
         // check every letter in additionLetters
         for (int i = 0; i < additionLetters.length(); i++)
         {
-            String tempChar = Character.toString(additionLetters.charAt(i));
+            String tempChar = Character.toString(additionLetters.charAt(i)).toLowerCase();
             // if it is an available letter, remove it from both lists
+            System.out.printf("Tempchar: %s%n", tempChar);
             if (validLetters.contains(tempChar))
             {
                 playerLetters.remove(tempChar);
@@ -429,9 +559,13 @@ public class EvalScrabblePlayer {
             }
         }
         // not empty means some letters that are not in availableLetters are used
-        if (!playerLetters.isEmpty())
-            //return false;
+
+        if (!playerLetters.isEmpty()) {
+            System.out.println("559");
+          //return false;
             return null;
+        }
+            
         
         ////////////////////////////////////////////////////////////////////////////////
         // Invalid case 4: connection
@@ -440,8 +574,11 @@ public class EvalScrabblePlayer {
         // same orientation, playWord is valid only when it contains initialWord
         if (playWord.getOrientation() == initialWord.getOrientation())
         {
-            if (!playW.contains(initialW))
+            if (!playW.contains(initialW)) {
+                System.out.println("570");
                 return null;
+            }
+                
         }
         // different orientation, two valid cases: 1. they are intersecting
         //                                         2. one letter in play word extends the
@@ -449,8 +586,11 @@ public class EvalScrabblePlayer {
         else
         {
             // if two words are intersecting, return playWord
-            if (!isIntersecting(playWord, initialWord))
+            if (!isIntersecting(playWord, initialWord)) {
+                System.out.println("intersection");
                 return null;
+            }
+                
             // check if it is case 2
             // isExtending() return: 1. null when invalid
             //                       2. a new Word
@@ -527,9 +667,10 @@ public class EvalScrabblePlayer {
             else
                 intersect = initialWord.getStartRow() - playWord.getStartRow();
             // remove intersect letter
-            additionLetters = playerW.substring(0, intersect) + playerW.substring(intersect + 1, playerW.length());
+            additionLetters = playerW.substring(0, intersect) + 
+                              playerW.substring(intersect + 1, playerW.length());
         }
-        
+        System.out.printf("Addition letters: %s%n", additionLetters);
         return additionLetters;
     }
     
@@ -719,129 +860,6 @@ public class EvalScrabblePlayer {
         
         // finally, return the word
         return newWord;
-    }
-    
-    
-    /**
-     * Setup the board
-     */
-    private static ScrabbleWord generateBoard(char[][] board, ArrayList<String> dictionary, Random rand)
-    {        
-        // randomly choose a word
-        int randomIndex = rand.nextInt(dictionary.size());
-        String initialWord = dictionary.get(randomIndex);
-        while (initialWord.length() > 7)
-        {
-            randomIndex = rand.nextInt(dictionary.size());
-            initialWord = dictionary.get(randomIndex);
-        }
-        
-        // choose the orientation and position, put the initial word onto the board
-        boolean flipCoin = rand.nextBoolean();
-        char orientation = 'h';
-        int rowPos, colPos;
-        // flipCoin == true, then horizontal
-        if (flipCoin)
-        {
-            orientation = 'h';
-            // randomly choose the rowPos
-            rowPos = rand.nextInt(board.length);
-            // since it is horizontal, colPos may not be 14
-            // for example, if word.length = 6, then Max(colPos) = 9 = 15 - 6 + 1
-            colPos = rand.nextInt(board[0].length - initialWord.length() + 2);
-            // horizontal, so each letter has the same rowID
-            for (int i = 0; i < initialWord.length(); i++)
-            {
-                board[rowPos][colPos] = initialWord.charAt(i);
-                colPos++;
-            }
-        }
-        // otherwise, vertical
-        else
-        {
-            orientation = 'v';
-            // similarly, colPos = 0 ~ 14, rowPos = 0 ~ (15 - word.length + 1)
-            colPos = rand.nextInt(board[0].length);
-            rowPos = rand.nextInt(board.length - initialWord.length() + 1);
-            // vertical, so each letter has the same colID
-            for (int i = 0; i < initialWord.length(); i++)
-            {
-                board[rowPos][colPos] = initialWord.charAt(i);
-                rowPos++;
-            }
-        }
-        
-        ScrabbleWord wordOnBoard = new ScrabbleWord(initialWord, rowPos, colPos, orientation);
-        return wordOnBoard;
-    }
-    
-    
-    /**
-    * Haoran: randomly pick up 7 letters to be the available letters
-    *         according to the distribution on wiki page
-    */
-    private static void generateAvailableLetters(char[] availableLetters, Random rand)
-    {
-        // initial distribution (total 100 tiles):
-        // blank:2 A:9 B:2 C:2 D:4 E:12 F:2 G:3 H:2 I:9 J:1 K:1 L:4 M:2
-        //     N:6 O:8 P:2 Q:1 R:6 S:4  T:6 U:4 V:2 W:2 X:1 Y:2 Z:1
-        int[] distribution = {2, 9, 2, 2, 4, 12, 2, 3, 2, 9, 1, 1, 4, 2,
-                              6, 8, 2, 1, 6, 4,  6, 4, 2, 2, 1, 2, 1};
-        
-        int tilesNum = 100;
-        for (int i = 0; i < 7; i++)
-        {
-            int randomNum = rand.nextInt(tilesNum) + 1;
-            tilesNum = tilesNum - 1;
-            
-            // according to the randomNum, find the character
-            int cumulative = 0;
-            int counter = 0;
-            while (randomNum > cumulative)
-            {
-                cumulative += distribution[counter];
-                counter++;
-            }
-            
-            // counter - 1 is the actual index of distribution
-            // distribution[counter - 1] should minus 1 because one tile has been picked
-            distribution[counter - 1]--;
-            
-            // which letter is chosen
-            if ((counter - 1) == 0)
-                availableLetters[i] = '_';
-            else
-            {
-                char letter = (char)((counter - 1) + 64);
-                availableLetters[i] = letter;
-            }
-        }
-    }
-    
-
-    /*
-     * return peak memory usage in bytes
-     *
-     * adapted from
-
-     * https://stackoverflow.com/questions/34624892/how-to-measure-peak-heap-memory-usage-in-java 
-     */
-    private static long peakMemoryUsage() 
-    {
-
-	List<MemoryPoolMXBean> pools = ManagementFactory.getMemoryPoolMXBeans();
-	long total = 0;
-	for (MemoryPoolMXBean memoryPoolMXBean : pools)
-	    {
-		if (memoryPoolMXBean.getType() == MemoryType.HEAP)
-		{
-		    long peakUsage = memoryPoolMXBean.getPeakUsage().getUsed();
-		    // System.out.println("Peak used for: " + memoryPoolMXBean.getName() + " is: " + peakUsage);
-		    total = total + peakUsage;
-		}
-	    }
-
-	return total;
     }
 
 }

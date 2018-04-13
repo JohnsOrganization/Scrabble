@@ -21,17 +21,28 @@ public class ScrabblePlayer
 {
     //Global fields
     Node root;
-    
+    static ArrayList<String> dictionary = new ArrayList<String>();
+    public static ArrayList<String> one = new ArrayList<>();
+    public static ArrayList<String> two= new ArrayList<>();
+    public static ArrayList<String> three = new ArrayList<>();
+    public static ArrayList<String> four = new ArrayList<>();
+    public static ArrayList<String> five = new ArrayList<>();
+    public static ArrayList<String> six= new ArrayList<>();
+    public static ArrayList<String> seven  = new ArrayList<>();
+    public static ArrayList<String> other  = new ArrayList<>();
+    public static ArrayList<String> combinations = new ArrayList<>();
+    static ArrayList<String> validWords = new ArrayList<>();
     
     // initialize ScrabblePlayer with a file of English words
     public ScrabblePlayer(String wordFile) throws FileNotFoundException
     {
-        
+
         Scanner dictFile = new Scanner(new File(wordFile));
         root = new Node(' ', null);
         while (dictFile.hasNext()) {
             
             String nextWord = dictFile.nextLine().toUpperCase();
+            dictionary.add(nextWord);
             if (nextWord.length() < 15) {
                 ArrayList<Node> children = root.getChildren();
                 for (int charCtr = 0; charCtr < nextWord.length(); charCtr++) {
@@ -77,6 +88,17 @@ public class ScrabblePlayer
             
             
         }
+        
+        parseDictionary();
+        System.out.println(one.size());
+        System.out.println(two.size());
+        System.out.println(three.size());
+        System.out.println(four.size());
+        System.out.println(five.size());
+        System.out.println(six.size());
+        System.out.println(seven.size());
+        System.out.println(other.size());
+        
         //************************************************************************CHANGES********************************
         //ArrayList<Node> children = root.getChildren().get(25).getChildren().get(0).getChildren();
         //for (Node e : children) {
@@ -111,6 +133,7 @@ public class ScrabblePlayer
     //    a blank (wildcard) is represented using an underscore '_'
     //
 
+    
     public ScrabbleWord getScrabbleWord(char[][] board, char[] availableLetters)
     {
         /*
@@ -166,25 +189,206 @@ public class ScrabblePlayer
         
         //Test for the checkValidity() method
         //String word = "ETHICS";
-        //System.out.println(checkValidity(word));
+        //System.out.println(checkValidity(opponent.getScrabbleWord()));
+        //ArrayList<String> allAvailableValidWords = enumerate(availableLetters, new ArrayList<String>());
+        
+        //System.out.println(allAvailableValidWords.size());
+        
         
         
         return  new ScrabbleWord("MYWORD", 0, 0, 'h');
     }
 
+    //parses the dictionary into size based arrays
+    public static void parseDictionary() {
+        int size;
+        String word;
+        for(int i = 0; i < dictionary.size(); i++) {
+            size = dictionary.get(i).length();
+            word =  dictionary.get(i);
+            if(size==1) {
+                one.add(word);
+            } else  if(size==2) {
+                two.add(word);
+            } else  if(size==3) {
+                three.add(word);
+            } else  if(size==4) {
+                four.add(word);
+            } else  if(size==5) {
+                five.add(word);
+            } else  if(size==6) {
+                six.add(word);
+            } else  if(size==7) {
+                seven.add(word);
+            }else {
+                other.add(word);
+            }
+            
+        }
+    }
+    
+    public static void getValidWords(int size, char[] availableLetters) {
+        //gets all n letter combinations from the 7 letters
+        //possibleStrings(N, availableLetters,"");
+        possibleStrings(size, availableLetters,"");
+        //Compares the possible combinations with valid words the adds the valid to list
+        
+        //words of size 1
+        if(size == 1) {
+            for(int i = 0; i < combinations.size(); i++) {
+                if(one.contains(combinations.get(i))) {
+                    validWords.add(combinations.get(i));
+                }
+            }
+            //Resets the combinations
+            combinations = new ArrayList<>();
+        }
+        //words of size 2
+        else if(size == 2) {
+            for(int i = 0; i < combinations.size(); i++) {
+                if(two.contains(combinations.get(i))) {
+                    validWords.add(combinations.get(i));
+                }
+            }
+            //Resets the combinations
+            combinations = new ArrayList<>();
+        }
+        //for words of size three
+        else if(size == 3) {
+            for(int i = 0; i < combinations.size(); i++) {
+                if(three.contains(combinations.get(i))) {
+                    validWords.add(combinations.get(i));
+                }
+            }
+            //Resets the combinations
+            combinations = new ArrayList<>();
+        }
+        //words of 4
+        else if(size == 4) {
+            for(int i = 0; i < combinations.size(); i++) {
+                if(four.contains(combinations.get(i))) {
+                    validWords.add(combinations.get(i));
+                }
+            }
+            //Resets the combinations
+            combinations = new ArrayList<>();
+        }
+      //words of 5
+        else if(size == 5) {
+            for(int i = 0; i < combinations.size(); i++) {
+                if(five.contains(combinations.get(i))) {
+                    validWords.add(combinations.get(i));
+                }
+            }
+            //Resets the combinations
+            combinations = new ArrayList<>();
+        }
+      //words of 6
+        else if(size == 6) {
+            for(int i = 0; i < combinations.size(); i++) {
+                if(six.contains(combinations.get(i))) {
+                    validWords.add(combinations.get(i));
+                }
+            }
+            //Resets the combinations
+            combinations = new ArrayList<>();
+        }
+      //words of 7
+        else if(size == 7) {
+            for(int i = 0; i < combinations.size(); i++) {
+                if(seven.contains(combinations.get(i))) {
+                    validWords.add(combinations.get(i));
+                }
+            }
+            //Resets the combinations
+            combinations = new ArrayList<>();
+        }
+    }
+    
+    //*************NEED TO EDIT*****************************
+    public static void possibleStrings(int maxLength, char[] alphabet, String curr) {
+
+        // If the current string has reached it's maximum length
+        if(curr.length() == maxLength) {
+            combinations.add(curr);
+
+        // Else add each letter from the alphabet to new strings and process these new strings again
+        } else {
+            for(int i = 0; i < alphabet.length; i++) {
+                String oldCurr = curr;
+                curr += alphabet[i];
+                possibleStrings(maxLength,alphabet,curr);
+                curr = oldCurr;
+            }
+        }
+    }
+    
+    /*
+    ArrayList<String> enumerate(char[] availLet, ArrayList<String> validWords) {
+        
+        for (int a = 0; a < availLet.length; a++) {
+            String aString = Character.toString(availLet[a]);
+            for (int b = (a+1); b < availLet.length; b++) {
+                String bString = aString + Character.toString(availLet[b]);
+                for (int c = (b+1); c < availLet.length; c++) {
+                    String cString = bString + Character.toString(availLet[c]);
+                    for (int d = (c+1); d < availLet.length; d++) {
+                        String dString = cString + Character.toString(availLet[d]);
+                        for (int e = (d+1); e < availLet.length; e++) {
+                            String eString = dString + Character.toString(availLet[e]);
+                            for (int f = (e+1); f < availLet.length; f++) {
+                                String fString = eString + Character.toString(availLet[f]);
+                                for (int g = (f+1); g < availLet.length; g++) {
+                                    String gString = fString + Character.toString(availLet[g]);
+                                    
+                                    if (checkValidity(gString)) {
+                                        validWords.add(gString);
+                                    }
+                                }
+                                System.out.println(fString);
+                                if (checkValidity(fString)) {
+                                    validWords.add(fString);
+                                }
+                            }
+                            if (checkValidity(eString)) {
+                                validWords.add(eString);
+                            }
+                        }
+                        if (checkValidity(dString)) {
+                            validWords.add(dString);
+                        }
+                    }
+                    if (checkValidity(cString)) {
+                        validWords.add(cString);
+                    }
+                }
+                if (checkValidity(bString)) {
+                    validWords.add(bString);
+                }
+            }
+            if(checkValidity(aString)) {
+                validWords.add(aString);
+            }
+        }
+        
+        
+        return validWords;
+    }
+    */
+    
     boolean checkValidity(String testWord) {
         
         ArrayList<Node> currentChildren = root.getChildren();
         //Node current = currentChildren.get(0);
         for (int i = 0; i < testWord.length(); i++) {
-            System.out.printf("%s:", testWord.charAt(i));
+            //System.out.printf("%s:", testWord.charAt(i));
             INNER_LOOP:
             for (int j = 0; j < currentChildren.size(); j++) {
-                System.out.print(currentChildren.get(j).getLetter());
+                //System.out.print(currentChildren.get(j).getLetter());
                 if (testWord.charAt(i) == currentChildren.get(j).getLetter()) {
                     //System.out.println(currentChildren.get(j).getLetter());
                     if ((currentChildren.get(j).getWord() != null) && currentChildren.get(j).getWord().equals(testWord)) {
-                        System.out.println();
+                        //System.out.println();
                         return true;
                     } else {
                         currentChildren = currentChildren.get(j).getChildren();
@@ -192,7 +396,7 @@ public class ScrabblePlayer
                     }
                 }
             }
-            System.out.println();
+            //System.out.println();
         }
         return false;
     }

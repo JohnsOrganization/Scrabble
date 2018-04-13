@@ -21,17 +21,9 @@ public class ScrabblePlayer
 {
     //Global fields
     Node root;
-    static ArrayList<String> dictionary = new ArrayList<String>();
-    public static ArrayList<String> one = new ArrayList<>();
-    public static ArrayList<String> two= new ArrayList<>();
-    public static ArrayList<String> three = new ArrayList<>();
-    public static ArrayList<String> four = new ArrayList<>();
-    public static ArrayList<String> five = new ArrayList<>();
-    public static ArrayList<String> six= new ArrayList<>();
-    public static ArrayList<String> seven  = new ArrayList<>();
-    public static ArrayList<String> other  = new ArrayList<>();
-    public static ArrayList<String> combinations = new ArrayList<>();
-    static ArrayList<String> validWords = new ArrayList<>();
+    
+    char[] alphabet = new char[] {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+            'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
     
     // initialize ScrabblePlayer with a file of English words
     public ScrabblePlayer(String wordFile) throws FileNotFoundException
@@ -42,7 +34,6 @@ public class ScrabblePlayer
         while (dictFile.hasNext()) {
             
             String nextWord = dictFile.nextLine().toUpperCase();
-            dictionary.add(nextWord);
             if (nextWord.length() < 15) {
                 ArrayList<Node> children = root.getChildren();
                 for (int charCtr = 0; charCtr < nextWord.length(); charCtr++) {
@@ -88,8 +79,9 @@ public class ScrabblePlayer
             
             
         }
-        
-        parseDictionary();
+        /*
+        //parseDictionary();
+        System.out.println(combinations.size());
         System.out.println(one.size());
         System.out.println(two.size());
         System.out.println(three.size());
@@ -98,7 +90,7 @@ public class ScrabblePlayer
         System.out.println(six.size());
         System.out.println(seven.size());
         System.out.println(other.size());
-        
+        */
         //************************************************************************CHANGES********************************
         //ArrayList<Node> children = root.getChildren().get(25).getChildren().get(0).getChildren();
         //for (Node e : children) {
@@ -136,6 +128,10 @@ public class ScrabblePlayer
     
     public ScrabbleWord getScrabbleWord(char[][] board, char[] availableLetters)
     {
+
+        
+        
+        
         /*
          * CH:
          *  the board that is passed in has a random word from words.txt placed in a
@@ -167,6 +163,8 @@ public class ScrabblePlayer
         for (int row = 0; row < board.length; row++) {
             //Iterate through the cols of each row in the board
             for (int col = 0; col < board[0].length; col++) {
+                //****************
+                System.out.print(board[row][col]);
                 if (Character.getNumericValue(board[row][col]) != -1) {
                     opponentWord = opponentWord + board[row][col];
                     
@@ -183,8 +181,72 @@ public class ScrabblePlayer
                     }
                 }
             }
+            System.out.println();
         }
         ScrabbleWord opponent = new ScrabbleWord(opponentWord, startRow, startCol, opponentOrientation);
+        
+        ///////////////////////////////////////////////
+        //possibleStrings(availableLetters);
+        //System.out.println(combinations.size());
+        
+        
+        
+        
+        //Determines if there is a wildcard in the availableLetters
+        boolean containsWildcard = false;
+        int wildcardIndex = -1;
+        for (int j = 0; j < availableLetters.length; j++) {
+            if (availableLetters[j] == '_') {
+                containsWildcard = true;
+                wildcardIndex = j;
+            }
+        }
+        
+        //Add each latter from the opponent's word into the calculation of valid words 
+        ArrayList<ArrayList<String>> validWordsPlusOppWord = new ArrayList<ArrayList<String>>(opponent.getScrabbleWord().length());
+        for (int i = 0; i < opponent.getScrabbleWord().length(); i++) {
+            //if our available letters contains a wildcard
+            if (containsWildcard) {
+                char[] improvLetters = new char[8];
+                //Put our available letters into the new array
+                for (int j = 0; j < availableLetters.length; j++) {
+                    improvLetters[j] = availableLetters[j];
+                }
+                //Add opponent's letter to the new array
+                improvLetters[7] = opponent.getScrabbleWord().charAt(i);
+                //calculate all possibilities of the wildcard being any letter
+                for (int k = 0; k < alphabet.length; k++) {
+                    improvLetters[wildcardIndex] = alphabet[k];
+                    ArrayList<String> results = enumerate(improvLetters, new ArrayList<String>());
+                    validWordsPlusOppWord.add(results);
+                }
+                
+                
+            } else {
+                char[] improvLetters = new char[8];
+                for (int j = 0; j < availableLetters.length; j++) {
+                    improvLetters[j] = availableLetters[j];
+                }
+                improvLetters[7] = opponent.getScrabbleWord().charAt(i);
+                ArrayList<String> results = enumerate(improvLetters, new ArrayList<String>());
+                validWordsPlusOppWord.add(results);
+            }
+            
+        }
+        
+        
+        
+        //Prints pertinent information
+        System.out.println(opponent.getScrabbleWord());
+        for (int i = 0; i < availableLetters.length; i++) {
+            System.out.println(availableLetters[i]);
+        }
+        System.out.printf("ArrayList size:%s%n", validWordsPlusOppWord.size());
+        for (int i = 0; i < validWordsPlusOppWord.size(); i++) {
+            //for (int j = 0; j < validWordsPlusOppWord.get(i))
+            System.out.println(validWordsPlusOppWord.get(i).size());
+        }
+        //////////////////////////////////////////////////
         //System.out.println(opponent.getScrabbleWord());
         
         //Test for the checkValidity() method
@@ -194,187 +256,76 @@ public class ScrabblePlayer
         
         //System.out.println(allAvailableValidWords.size());
         
+        System.out.println(opponent.getStartRow() + " " + opponent.getStartColumn());
         
-        
-        return  new ScrabbleWord("MYWORD", 0, 0, 'h');
+        return  new ScrabbleWord("WON", 8, 4, 'h');
     }
 
-    //parses the dictionary into size based arrays
-    public static void parseDictionary() {
-        int size;
-        String word;
-        for(int i = 0; i < dictionary.size(); i++) {
-            size = dictionary.get(i).length();
-            word =  dictionary.get(i);
-            if(size==1) {
-                one.add(word);
-            } else  if(size==2) {
-                two.add(word);
-            } else  if(size==3) {
-                three.add(word);
-            } else  if(size==4) {
-                four.add(word);
-            } else  if(size==5) {
-                five.add(word);
-            } else  if(size==6) {
-                six.add(word);
-            } else  if(size==7) {
-                seven.add(word);
-            }else {
-                other.add(word);
+    
+    
+    ArrayList<String> enumerate(char[] availLet, ArrayList<String> newValidWords) {
+        
+        for (int a = 0; a < availLet.length; a++) {
+            String aString = (Character.toString(availLet[a])).toUpperCase();
+
+            if(checkValidity(aString)) {
+                newValidWords.add(aString);
+            }
+            for (int b = 1; b < availLet.length; b++) {
+                String bString = (aString + Character.toString(availLet[b])).toUpperCase();
+                if (checkValidity(bString)) {
+                    newValidWords.add(bString);
+                }
+                for (int c = 2; c < availLet.length; c++) {
+                    String cString = (bString + Character.toString(availLet[c])).toUpperCase();
+                    if (checkValidity(cString)) {
+                        newValidWords.add(cString);
+                    }
+                    for (int d = 3; d < availLet.length; d++) {
+                        String dString = (cString + Character.toString(availLet[d])).toUpperCase();
+                        if (checkValidity(dString)) {
+                            newValidWords.add(dString);
+                        }
+                        for (int e = 4; e < availLet.length; e++) {
+                            String eString = (dString + Character.toString(availLet[e])).toUpperCase();
+                            if (checkValidity(eString)) {
+                                newValidWords.add(eString);
+                            }
+                            for (int f = 5; f < availLet.length; f++) {
+                                String fString = (eString + Character.toString(availLet[f])).toUpperCase();
+                                if (checkValidity(fString)) {
+                                    newValidWords.add(fString);
+                                }
+                                for (int g = 6; g < availLet.length; g++) {
+                                    String gString = (fString + Character.toString(availLet[g])).toUpperCase();
+                                    if (checkValidity(gString)) {
+                                        newValidWords.add(gString);
+                                    }
+                                    for (int m = 7; m < availLet.length; m++) {
+                                        String mString = (gString + Character.toString(availLet[m])).toUpperCase();
+                                        if (checkValidity(mString)) {
+                                            newValidWords.add(mString);
+                                        }
+                                    }
+                                    gString = fString;
+                                }
+                                fString = eString;
+                            }
+                            eString = dString;
+                        }
+                        dString = cString;
+                    }
+                    cString = bString;
+                }
+                bString = aString;
             }
             
         }
+        
+        
+        return newValidWords;
     }
     
-    public static void getValidWords(int size, char[] availableLetters) {
-        //gets all n letter combinations from the 7 letters
-        //possibleStrings(N, availableLetters,"");
-        possibleStrings(size, availableLetters,"");
-        //Compares the possible combinations with valid words the adds the valid to list
-        
-        //words of size 1
-        if(size == 1) {
-            for(int i = 0; i < combinations.size(); i++) {
-                if(one.contains(combinations.get(i))) {
-                    validWords.add(combinations.get(i));
-                }
-            }
-            //Resets the combinations
-            combinations = new ArrayList<>();
-        }
-        //words of size 2
-        else if(size == 2) {
-            for(int i = 0; i < combinations.size(); i++) {
-                if(two.contains(combinations.get(i))) {
-                    validWords.add(combinations.get(i));
-                }
-            }
-            //Resets the combinations
-            combinations = new ArrayList<>();
-        }
-        //for words of size three
-        else if(size == 3) {
-            for(int i = 0; i < combinations.size(); i++) {
-                if(three.contains(combinations.get(i))) {
-                    validWords.add(combinations.get(i));
-                }
-            }
-            //Resets the combinations
-            combinations = new ArrayList<>();
-        }
-        //words of 4
-        else if(size == 4) {
-            for(int i = 0; i < combinations.size(); i++) {
-                if(four.contains(combinations.get(i))) {
-                    validWords.add(combinations.get(i));
-                }
-            }
-            //Resets the combinations
-            combinations = new ArrayList<>();
-        }
-      //words of 5
-        else if(size == 5) {
-            for(int i = 0; i < combinations.size(); i++) {
-                if(five.contains(combinations.get(i))) {
-                    validWords.add(combinations.get(i));
-                }
-            }
-            //Resets the combinations
-            combinations = new ArrayList<>();
-        }
-      //words of 6
-        else if(size == 6) {
-            for(int i = 0; i < combinations.size(); i++) {
-                if(six.contains(combinations.get(i))) {
-                    validWords.add(combinations.get(i));
-                }
-            }
-            //Resets the combinations
-            combinations = new ArrayList<>();
-        }
-      //words of 7
-        else if(size == 7) {
-            for(int i = 0; i < combinations.size(); i++) {
-                if(seven.contains(combinations.get(i))) {
-                    validWords.add(combinations.get(i));
-                }
-            }
-            //Resets the combinations
-            combinations = new ArrayList<>();
-        }
-    }
-    
-    //*************NEED TO EDIT*****************************
-    public static void possibleStrings(int maxLength, char[] alphabet, String curr) {
-
-        // If the current string has reached it's maximum length
-        if(curr.length() == maxLength) {
-            combinations.add(curr);
-
-        // Else add each letter from the alphabet to new strings and process these new strings again
-        } else {
-            for(int i = 0; i < alphabet.length; i++) {
-                String oldCurr = curr;
-                curr += alphabet[i];
-                possibleStrings(maxLength,alphabet,curr);
-                curr = oldCurr;
-            }
-        }
-    }
-    
-    /*
-    ArrayList<String> enumerate(char[] availLet, ArrayList<String> validWords) {
-        
-        for (int a = 0; a < availLet.length; a++) {
-            String aString = Character.toString(availLet[a]);
-            for (int b = (a+1); b < availLet.length; b++) {
-                String bString = aString + Character.toString(availLet[b]);
-                for (int c = (b+1); c < availLet.length; c++) {
-                    String cString = bString + Character.toString(availLet[c]);
-                    for (int d = (c+1); d < availLet.length; d++) {
-                        String dString = cString + Character.toString(availLet[d]);
-                        for (int e = (d+1); e < availLet.length; e++) {
-                            String eString = dString + Character.toString(availLet[e]);
-                            for (int f = (e+1); f < availLet.length; f++) {
-                                String fString = eString + Character.toString(availLet[f]);
-                                for (int g = (f+1); g < availLet.length; g++) {
-                                    String gString = fString + Character.toString(availLet[g]);
-                                    
-                                    if (checkValidity(gString)) {
-                                        validWords.add(gString);
-                                    }
-                                }
-                                System.out.println(fString);
-                                if (checkValidity(fString)) {
-                                    validWords.add(fString);
-                                }
-                            }
-                            if (checkValidity(eString)) {
-                                validWords.add(eString);
-                            }
-                        }
-                        if (checkValidity(dString)) {
-                            validWords.add(dString);
-                        }
-                    }
-                    if (checkValidity(cString)) {
-                        validWords.add(cString);
-                    }
-                }
-                if (checkValidity(bString)) {
-                    validWords.add(bString);
-                }
-            }
-            if(checkValidity(aString)) {
-                validWords.add(aString);
-            }
-        }
-        
-        
-        return validWords;
-    }
-    */
     
     boolean checkValidity(String testWord) {
         

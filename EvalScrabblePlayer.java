@@ -292,8 +292,8 @@ public class EvalScrabblePlayer {
         int[] distribution = {2, 9, 2, 2, 4, 12, 2, 3, 2, 9, 1, 1, 4, 2,
                               6, 8, 2, 1, 6, 4,  6, 4, 2, 2, 1, 2, 1};
         
-        char[] allCharacters = {'_', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-        'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
+        char[] allCharacters = {'_', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+        'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
         
         int tilesNum = 100;
         for (int i = 0; i < 7; i++)
@@ -541,7 +541,6 @@ public class EvalScrabblePlayer {
 
         ArrayList<String> validLetters = new ArrayList<String>();
         for (char i: availableLetters) {
-            System.out.printf("validLetters: %s%n", Character.toString(i));
             validLetters.add(Character.toString(i));
         }
             
@@ -549,9 +548,8 @@ public class EvalScrabblePlayer {
         // check every letter in additionLetters
         for (int i = 0; i < additionLetters.length(); i++)
         {
-            String tempChar = Character.toString(additionLetters.charAt(i)).toLowerCase();
+            String tempChar = Character.toString(additionLetters.charAt(i));
             // if it is an available letter, remove it from both lists
-            System.out.printf("Tempchar: %s%n", tempChar);
             if (validLetters.contains(tempChar))
             {
                 playerLetters.remove(tempChar);

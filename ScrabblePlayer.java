@@ -123,7 +123,9 @@ public class ScrabblePlayer
     public ScrabbleWord getScrabbleWord(char[][] board, char[] availableLetters)
     {
 
-        
+        for (int i = 0; i < availableLetters.length; i++) {
+            System.out.printf("%d: %s%n", i, availableLetters[i]);
+        }
         
         
         /*
@@ -261,9 +263,32 @@ public class ScrabblePlayer
         System.out.printf("LargestWord: %s%nValue: %d%n", maxWord, maxWordScore);
         
         //Test to determine which row the word should be in
-        int arrayListNum = -1;
+        StringBuilder availLetWord = new StringBuilder("");
+        for (int i = 0; i < maxWord.length(); i++) {
+            availLetWord.append(maxWord.charAt(i));
+        }
+        for (int i = 0; i < availableLetters.length; i++) {
+            for (int j = 0; j < availLetWord.length(); j++) {
+                if (availableLetters[i] == availLetWord.charAt(j)) {
+                    availLetWord.deleteCharAt(j);
+                    break;
+                }
+                if (availableLetters[i] == '_') {
+                    //boolean hasWildCard
+                }
+            }
+            
+        }
         
+        System.out.printf("availLetWord: %s%n", availLetWord.toString());
+        int arrayListNum = 0;
+        for (int i = 0; i < opponent.getScrabbleWord().length(); i++) {
+            if (opponent.getScrabbleWord().charAt(i) == availLetWord.charAt(0)) {
+                arrayListNum = i;
+            }
+        }
         
+        System.out.printf("ArrayListNum: %d%n", arrayListNum);
         //Determine the position that the word should be in
         int playerStartRow = -1;
         int playerStartCol = -1;
@@ -272,9 +297,9 @@ public class ScrabblePlayer
         if (opponent.getOrientation() == 'h') {
             pOrientation = 'v';
             playerStartCol = opponent.getStartColumn() + arrayListNum;
-            for (int i = 0; i < maxWord.length(); i++) {
-                for (int j = 0; j < opponent.getScrabbleWord().length(); j++) {
-                    if (maxWord.charAt(i) == opponent.getScrabbleWord().charAt(j)) {
+            for (int i = 0; i < opponent.getScrabbleWord().length(); i++) {
+                for (int j = 0; j < maxWord.length(); j++) {
+                    if (maxWord.charAt(j) == opponent.getScrabbleWord().charAt(i)) {
                         found = true;
                         playerStartRow = (opponent.getStartRow() - j);
                         break;
@@ -284,13 +309,13 @@ public class ScrabblePlayer
                     break;
             }
         } else {
-            System.out.printf("here1: %d%n", arrayListNum);
             pOrientation = 'h';
             playerStartRow = opponent.getStartRow() + arrayListNum;
-            for (int i = 0; i < maxWord.length(); i++) {
-                for (int j = 0; j < opponent.getScrabbleWord().length(); j++) {
-                    if (maxWord.charAt(i) == opponent.getScrabbleWord().charAt(j)) {
+            for (int i = 0; i < opponent.getScrabbleWord().length(); i++) {
+                for (int j = 0; j < maxWord.length(); j++) {
+                    if (maxWord.charAt(j) == opponent.getScrabbleWord().charAt(i)) {
                         found = true;
+                        System.out.printf("i: %d%nj: %d", i, j);
                         playerStartCol = (opponent.getStartColumn() - j);
                         break;
                     }
@@ -313,6 +338,8 @@ public class ScrabblePlayer
         //System.out.println(allAvailableValidWords.size());
         //System.out.printf("pStartRow: %s%npStartCol: %s%n", playerStartRow, playerStartCol);
         //return  new ScrabbleWord(maxWord, playerStartRow, playerStartCol, pOrientation);
+        System.out.printf("Word: %s%nStartRow: %d%n, StartCol: %d%nOrientation: %s%n", maxWord, playerStartRow, playerStartCol, pOrientation);
+        
         return new ScrabbleWord(maxWord, playerStartRow, playerStartCol, pOrientation);
     }
 

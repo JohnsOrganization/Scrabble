@@ -21,7 +21,7 @@ public class ScrabblePlayer
 {
     //Global fields
     Node root;
-    
+    public static Set<String> set = new HashSet<>();
     char[] alphabet = new char[] {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
             'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
     
@@ -196,79 +196,75 @@ public class ScrabblePlayer
             }
         }
         
-        //Add each latter from the opponent's word into the calculation of valid words 
-        ArrayList<ArrayList<String>> validWordsPlusOppWord = new ArrayList<ArrayList<String>>(opponent.getScrabbleWord().length());
+        
+        
+        
+        
+        
+        
+        
+        
+        //Add each latter from the opponent's word into the calculation of valid words         
         for (int i = 0; i < opponent.getScrabbleWord().length(); i++) {
             //if our available letters contains a wildcard
+            ArrayList<Character> improvLetters = new ArrayList<Character>();
+            for (int j = 0; j < availableLetters.length; j++) {
+                improvLetters.add(availableLetters[j]);
+            }
+            improvLetters.add(opponent.getScrabbleWord().charAt(i));
             if (containsWildcard) {
-                char[] improvLetters = new char[8];
-                //Put our available letters into the new array
-                for (int j = 0; j < availableLetters.length; j++) {
-                    improvLetters[j] = availableLetters[j];
-                }
-                //Add opponent's letter to the new array
-                improvLetters[7] = opponent.getScrabbleWord().charAt(i);
+                
                 //calculate all possibilities of the wildcard being any letter
                 for (int k = 0; k < alphabet.length; k++) {
-                    improvLetters[wildcardIndex] = alphabet[k];
-                    ArrayList<String> results = enumerate(improvLetters, new ArrayList<String>());
-                    validWordsPlusOppWord.add(results);
+                    improvLetters.set(wildcardIndex, alphabet[k]);
+                    for (int p = 0; p < availableLetters.length; p++) {
+                        improvLetters.add(improvLetters.remove(0));
+                        enumerate(improvLetters, new boolean[improvLetters.size()], 0, "");
+                    }
+                    
                 }
                 
                 
             } else {
-                char[] improvLetters = new char[8];
-                for (int j = 0; j < availableLetters.length; j++) {
-                    improvLetters[j] = availableLetters[j];
+                
+                enumerate(improvLetters, new boolean[improvLetters.size()], 0, "");
+                for (int k = 0; k < availableLetters.length; k++) {
+                    improvLetters.add(improvLetters.remove(0));
+                    enumerate(improvLetters, new boolean[improvLetters.size()], 0, "");
                 }
-                improvLetters[7] = opponent.getScrabbleWord().charAt(i);
-                ArrayList<String> results = enumerate(improvLetters, new ArrayList<String>());
-                for (int k = 0; k < improvLetters.length; k++) {
-                    System.out.printf("%s ", improvLetters[k]);
-                }
-                System.out.println();
-                validWordsPlusOppWord.add(results);
             }
             
         }
         
-        for (int i = 0; i < validWordsPlusOppWord.size(); i++) {
-            for (int j = 0; j < validWordsPlusOppWord.get(i).size(); j++) {
-                if (validWordsPlusOppWord.get(i).get(j).equals("ARRIERE")) {
-                    System.out.printf("FOUND: i: %d    j: %d%n", i, j);
-                }
-            }
-        }
-        
-        
-        
+
+        ArrayList<String> validWords = new ArrayList<String>(set);
         int maxWordScore = 0;
         String maxWord = "";
-        int arrayListNum = -1;
-        for (int i = 0; i < validWordsPlusOppWord.size(); i++) {
-            for (int j = 0; j < validWordsPlusOppWord.get(i).size(); j++) {
-                int currentWordScore = 0;
+        for (int i = 0; i < validWords.size(); i++) {
+            int currentWordScore = 0;
+            
+            for (int k = 0; k < validWords.get(i).length(); k++) {
+                char letterInWord = validWords.get(i).charAt(k);
                 
-                for (int k = 0; k < validWordsPlusOppWord.get(i).get(j).length(); k++) {
-                    char letterInWord = validWordsPlusOppWord.get(i).get(j).charAt(k);
-                    
-                    for (char tempChar: LETTERS)
-                    {
-                        if (tempChar == letterInWord)
-                            currentWordScore += LETTERS_SCORE[k];
-                    }
+                for (char tempChar: LETTERS)
+                {
+                    if (tempChar == letterInWord)
+                        currentWordScore += LETTERS_SCORE[k];
                 }
-                if (currentWordScore > maxWordScore) {
-                    maxWordScore = currentWordScore;
-                    maxWord = validWordsPlusOppWord.get(i).get(j);
-                    arrayListNum = i;
-                }
-                
+            }
+            if (currentWordScore > maxWordScore) {
+                maxWordScore = currentWordScore;
+                maxWord = validWords.get(i);
             }
         }
         
         System.out.printf("LargestWord: %s%nValue: %d%n", maxWord, maxWordScore);
         
+        //Test to determine which row the word should be in
+        int arrayListNum = -1;
+        
+        
+        //Determine the position that the word should be in
         int playerStartRow = -1;
         int playerStartCol = -1;
         boolean found = false;
@@ -315,25 +311,35 @@ public class ScrabblePlayer
         //ArrayList<String> allAvailableValidWords = enumerate(availableLetters, new ArrayList<String>());
         
         //System.out.println(allAvailableValidWords.size());
-        System.out.printf("pStartRow: %s%npStartCol: %s%n", playerStartRow, playerStartCol);
-        return  new ScrabbleWord(maxWord, playerStartRow, playerStartCol, pOrientation);
+        //System.out.printf("pStartRow: %s%npStartCol: %s%n", playerStartRow, playerStartCol);
+        //return  new ScrabbleWord(maxWord, playerStartRow, playerStartCol, pOrientation);
+        return new ScrabbleWord(maxWord, playerStartRow, playerStartCol, pOrientation);
     }
 
     
-    ArrayList<String> enumerate(char[] availLet, ArrayList<String> newValidWords) {
-        
-        
-        
-        
-        
-        
-        
-        return new ArrayList<String>();
-    }
     
-    /*
+    void enumerate(ArrayList<Character> availLet, boolean[] visited, int position, String returnWord) {      
+        visited[position] = true;
+         returnWord = returnWord + availLet.get(position);
+         if (checkValidity(returnWord)) {
+             set.add(returnWord);
+             //System.out.println(returnWord);
+         }
+         for (int i = 0; i < availLet.size(); i++) {
+             if (!visited[i]) {
+                 enumerate(availLet, visited, i, returnWord);
+             }
+             }
+         
+         if (returnWord.length() != 0) {
+         returnWord = returnWord.substring(returnWord.length() - 1);
+         }
+             visited[position] = false;
+     }
+    
+    
     ArrayList<String> enumerate(char[] availLet, ArrayList<String> newValidWords) {
-        /*
+        
         for(int i = 0; i < availLet.length; i++) {
             System.out.println(availLet[i]);
         }
@@ -398,7 +404,7 @@ public class ScrabblePlayer
         
         return newValidWords;
     }
-    */
+    
     
     boolean checkValidity(String testWord) {
         

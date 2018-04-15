@@ -1,11 +1,16 @@
 /*
 
   Authors (group members):
+      Andrea Swanson (T)
+      John Linn
+      Cameron Haupt
   Email addresses of group members:
-  Group name:
-
-  Course:
-  Section:
+      aswanson2016@fit.edu
+      jlinn2016@fit.edu
+      chaupt2013@fit.edu
+  Group name: 14b  
+  Course: CSE2010
+  Section: 01
 
   Description of the overall algorithm and key data structures:
 
@@ -173,9 +178,20 @@ public class ScrabblePlayer
         
         
         
-        return determineWordLocation(opponent, determinedMaxWord, availLetWord);
+        return validateLocation(opponent, determinedMaxWord, availLetWord, validWords, availableLetters);
     }
 
+    ScrabbleWord validateLocation(ScrabbleWord opponent, MaxWord determinedMaxWord, StringBuilder availLetWord, ArrayList<String> validWords, char[] availableLetters) {
+        ScrabbleWord sWord = determineWordLocation(opponent, determinedMaxWord, availLetWord);
+        while (!validBoundary(sWord)) {
+            validWords.remove(sWord.getScrabbleWord());
+            MaxWord nextMaxWord = determineMaxWord(validWords);
+            StringBuilder nextAvailLetWord = determineOppLetUsed(availableLetters, nextMaxWord);
+            sWord = determineWordLocation(opponent, nextMaxWord, nextAvailLetWord);
+        }
+        
+        return sWord;
+    }
     
     boolean validBoundary(ScrabbleWord myWord) {
         if ((myWord.getStartRow() < 0) || (myWord.getStartColumn() < 0)) {

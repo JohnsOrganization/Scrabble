@@ -43,11 +43,13 @@ public class ScrabblePlayer
     {
 
         Scanner dictFile = new Scanner(new File(wordFile));
+        int ctr = 0;
         root = new Node(' ', null);
         while (dictFile.hasNext()) {
             
             String nextWord = dictFile.nextLine().toUpperCase();
-            if (nextWord.length() < 15) {
+            if (nextWord.length() < 9) {
+                ctr++;
                 ArrayList<Node> children = root.getChildren();
                 for (int charCtr = 0; charCtr < nextWord.length(); charCtr++) {
                     //Nothing has been added to the root
@@ -93,6 +95,8 @@ public class ScrabblePlayer
             
         }
 
+        System.out.printf("ctr: %d%n", ctr);
+        
         //************************************************************************CHANGES********************************
         //ArrayList<Node> children = root.getChildren().get(25).getChildren().get(0).getChildren();
         //for (Node e : children) {

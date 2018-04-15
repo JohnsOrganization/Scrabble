@@ -158,7 +158,9 @@ public class ScrabblePlayer
 
         //Determines the word with the maximum value
         ArrayList<String> validWords = new ArrayList<String>(set);
-        MaxWord  determinedMaxWord = (determineMaxWord(validWords));
+        
+        
+        MaxWord  determinedMaxWord = determineMaxWord(validWords);
         System.out.printf("LargestWord: %s%nValue: %d%n", determinedMaxWord.getWord(), determinedMaxWord.getValue());
         
         
@@ -175,7 +177,13 @@ public class ScrabblePlayer
     }
 
     
-    
+    boolean validBoundary(ScrabbleWord myWord) {
+        if ((myWord.getStartRow() < 0) || (myWord.getStartColumn() < 0)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
     
     private void printAvailableLetters(char[] availableLetters) {
         for (int i = 0; i < availableLetters.length; i++) {

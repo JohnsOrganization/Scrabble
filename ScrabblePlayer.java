@@ -146,40 +146,8 @@ public class ScrabblePlayer
         }
         */
         
-        /*
-         * determines what and the opponent's word is, the orientation, and where it is located on the board
-         * Then it creates that words as a ScrabbleWord object to hold all that information.
-         */
-        String opponentWord = "";
-        char opponentOrientation = 'n';
-        int startRow = -1;
-        int startCol = -1;
-        //Iterate through the rows of the board
-        for (int row = 0; row < board.length; row++) {
-            //Iterate through the cols of each row in the board
-            for (int col = 0; col < board[0].length; col++) {
-                //****************
-                System.out.print(board[row][col]);
-                if (Character.getNumericValue(board[row][col]) != -1) {
-                    opponentWord = opponentWord + board[row][col];
-                    
-                    //If the word is empty, determine the orientation
-                    if (opponentWord.length() == 1) {
-                        startRow = row;
-                        startCol = col;
-                        //Accounts for if word is on the border
-                        if (((row + 1) < board.length) && (Character.getNumericValue(board[row + 1][col]) != -1)) {
-                            opponentOrientation = 'v';
-                        } else if (((col + 1) < board[0].length) && (Character.getNumericValue(board[row][col + 1]) != -1)) {
-                            opponentOrientation = 'h';
-                        }
-                    }
-                }
-            }
-            System.out.println();
-        }
-        System.out.printf("here: %d%n", startRow);
-        ScrabbleWord opponent = new ScrabbleWord(opponentWord, startRow, startCol, opponentOrientation);
+        //*************************************************************
+        ScrabbleWord opponent = getOpponentWord(board);
         
         ///////////////////////////////////////////////
         //possibleStrings(availableLetters);
@@ -238,22 +206,7 @@ public class ScrabblePlayer
         System.out.printf("LargestWord: %s%nValue: %d%n", determinedMaxWord.getWord(), determinedMaxWord.getValue());
         
         //Test to determine which row the word should be in
-        StringBuilder availLetWord = new StringBuilder("");
-        for (int i = 0; i < determinedMaxWord.getWord().length(); i++) {
-            availLetWord.append(determinedMaxWord.getWord().charAt(i));
-        }
-        for (int i = 0; i < availableLetters.length; i++) {
-            for (int j = 0; j < availLetWord.length(); j++) {
-                if (availableLetters[i] == availLetWord.charAt(j)) {
-                    availLetWord.deleteCharAt(j);
-                    break;
-                }
-                if (availableLetters[i] == '_') {
-                    //boolean hasWildCard
-                }
-            }
-            
-        }
+        StringBuilder availLetWord = determineWordLocation(availableLetters, determinedMaxWord);
         
         System.out.printf("availLetWord: %s%n", availLetWord.toString());
         int arrayListNum = 0;
@@ -409,6 +362,59 @@ public class ScrabblePlayer
         return newValidWords;
     }
     */
+    
+    StringBuilder determineWordLocation(char[] availableLetters, MaxWord determinedMaxWord) {
+        StringBuilder availLetWord = new StringBuilder("");
+        for (int i = 0; i < determinedMaxWord.getWord().length(); i++) {
+            availLetWord.append(determinedMaxWord.getWord().charAt(i));
+        }
+        for (int i = 0; i < availableLetters.length; i++) {
+            for (int j = 0; j < availLetWord.length(); j++) {
+                if (availableLetters[i] == availLetWord.charAt(j)) {
+                    availLetWord.deleteCharAt(j);
+                    break;
+                }
+            }
+        }
+        return availLetWord;
+    }
+    
+    ScrabbleWord getOpponentWord(char[][] board) {
+        /*
+         * determines what and the opponent's word is, the orientation, and where it is located on the board
+         * Then it creates that words as a ScrabbleWord object to hold all that information.
+         */
+        String opponentWord = "";
+        char opponentOrientation = 'n';
+        int startRow = -1;
+        int startCol = -1;
+        //Iterate through the rows of the board
+        for (int row = 0; row < board.length; row++) {
+            //Iterate through the cols of each row in the board
+            for (int col = 0; col < board[0].length; col++) {
+                //****************
+                System.out.print(board[row][col]);
+                if (Character.getNumericValue(board[row][col]) != -1) {
+                    opponentWord = opponentWord + board[row][col];
+                    
+                    //If the word is empty, determine the orientation
+                    if (opponentWord.length() == 1) {
+                        startRow = row;
+                        startCol = col;
+                        //Accounts for if word is on the border
+                        if (((row + 1) < board.length) && (Character.getNumericValue(board[row + 1][col]) != -1)) {
+                            opponentOrientation = 'v';
+                        } else if (((col + 1) < board[0].length) && (Character.getNumericValue(board[row][col + 1]) != -1)) {
+                            opponentOrientation = 'h';
+                        }
+                    }
+                }
+            }
+            System.out.println();
+        }
+        System.out.printf("here: %d%n", startRow);
+        return new ScrabbleWord(opponentWord, startRow, startCol, opponentOrientation);
+    }
     
     MaxWord determineMaxWord(ArrayList<String> paramValidWords) {
         int maxWordScore = 0;

@@ -198,14 +198,6 @@ public class ScrabblePlayer
             }
         }
         
-        
-        
-        
-        
-        
-        
-        
-        
         //Add each latter from the opponent's word into the calculation of valid words         
         for (int i = 0; i < opponent.getScrabbleWord().length(); i++) {
             //if our available letters contains a wildcard
@@ -238,34 +230,17 @@ public class ScrabblePlayer
             
         }
         
-
-        ArrayList<String> validWords = new ArrayList<String>(set);
-        int maxWordScore = 0;
-        String maxWord = "";
-        for (int i = 0; i < validWords.size(); i++) {
-            int currentWordScore = 0;
-            
-            for (int k = 0; k < validWords.get(i).length(); k++) {
-                char letterInWord = validWords.get(i).charAt(k);
-                
-                for (char tempChar: LETTERS)
-                {
-                    if (tempChar == letterInWord)
-                        currentWordScore += LETTERS_SCORE[k];
-                }
-            }
-            if (currentWordScore > maxWordScore) {
-                maxWordScore = currentWordScore;
-                maxWord = validWords.get(i);
-            }
-        }
         
-        System.out.printf("LargestWord: %s%nValue: %d%n", maxWord, maxWordScore);
+        //Determines the word with the maximum value
+        ArrayList<String> validWords = new ArrayList<String>(set);
+        MaxWord  determinedMaxWord = (determineMaxWord(validWords));
+        
+        System.out.printf("LargestWord: %s%nValue: %d%n", determinedMaxWord.getWord(), determinedMaxWord.getValue());
         
         //Test to determine which row the word should be in
         StringBuilder availLetWord = new StringBuilder("");
-        for (int i = 0; i < maxWord.length(); i++) {
-            availLetWord.append(maxWord.charAt(i));
+        for (int i = 0; i < determinedMaxWord.getWord().length(); i++) {
+            availLetWord.append(determinedMaxWord.getWord().charAt(i));
         }
         for (int i = 0; i < availableLetters.length; i++) {
             for (int j = 0; j < availLetWord.length(); j++) {
@@ -298,8 +273,8 @@ public class ScrabblePlayer
             pOrientation = 'v';
             playerStartCol = opponent.getStartColumn() + arrayListNum;
             for (int i = 0; i < opponent.getScrabbleWord().length(); i++) {
-                for (int j = 0; j < maxWord.length(); j++) {
-                    if (maxWord.charAt(j) == availLetWord.charAt(0)) {
+                for (int j = 0; j < determinedMaxWord.getWord().length(); j++) {
+                    if (determinedMaxWord.getWord().charAt(j) == availLetWord.charAt(0)) {
                         found = true;
                         System.out.printf("i: %d%nj: %d%n%n", i, j);
                         playerStartRow = (opponent.getStartRow() - j);
@@ -313,8 +288,8 @@ public class ScrabblePlayer
             pOrientation = 'h';
             playerStartRow = opponent.getStartRow() + arrayListNum;
             for (int i = 0; i < opponent.getScrabbleWord().length(); i++) {
-                for (int j = 0; j < maxWord.length(); j++) {
-                    if (maxWord.charAt(j) == availLetWord.charAt(0)) {
+                for (int j = 0; j < determinedMaxWord.getWord().length(); j++) {
+                    if (determinedMaxWord.getWord().charAt(j) == availLetWord.charAt(0)) {
                         found = true;
                         System.out.printf("i: %d%nj: %d", i, j);
                         playerStartCol = (opponent.getStartColumn() - j);
@@ -339,11 +314,12 @@ public class ScrabblePlayer
         //System.out.println(allAvailableValidWords.size());
         //System.out.printf("pStartRow: %s%npStartCol: %s%n", playerStartRow, playerStartCol);
         //return  new ScrabbleWord(maxWord, playerStartRow, playerStartCol, pOrientation);
-        System.out.printf("Word: %s%nStartRow: %d%nStartCol: %d%nOrientation: %s%n", maxWord, playerStartRow, playerStartCol, pOrientation);
+        System.out.printf("Word: %s%nStartRow: %d%nStartCol: %d%nOrientation: %s%n", determinedMaxWord.getWord(), playerStartRow, playerStartCol, pOrientation);
         
-        return new ScrabbleWord(maxWord, playerStartRow, playerStartCol, pOrientation);
+        return new ScrabbleWord(determinedMaxWord.getWord(), playerStartRow, playerStartCol, pOrientation);
     }
 
+    
     
     
     void enumerate(ArrayList<Character> availLet, boolean[] visited, int position, String returnWord) {      
@@ -365,7 +341,7 @@ public class ScrabblePlayer
              visited[position] = false;
      }
     
-    
+    /*
     ArrayList<String> enumerate(char[] availLet, ArrayList<String> newValidWords) {
         
         for(int i = 0; i < availLet.length; i++) {
@@ -432,7 +408,30 @@ public class ScrabblePlayer
         
         return newValidWords;
     }
+    */
     
+    MaxWord determineMaxWord(ArrayList<String> paramValidWords) {
+        int maxWordScore = 0;
+        String maxWord = "";
+        for (int i = 0; i < paramValidWords.size(); i++) {
+            int currentWordScore = 0;
+            
+            for (int k = 0; k < paramValidWords.get(i).length(); k++) {
+                char letterInWord = paramValidWords.get(i).charAt(k);
+                
+                for (char tempChar: LETTERS)
+                {
+                    if (tempChar == letterInWord)
+                        currentWordScore += LETTERS_SCORE[k];
+                }
+            }
+            if (currentWordScore > maxWordScore) {
+                maxWordScore = currentWordScore;
+                maxWord = paramValidWords.get(i);
+            }
+        }
+        return new MaxWord(maxWord, maxWordScore);
+    }
     
     boolean checkValidity(String testWord) {
         
@@ -457,6 +456,25 @@ public class ScrabblePlayer
             //System.out.println();
         }
         return false;
+    }
+    
+    static class MaxWord {
+        String word;
+        int value;
+        //Try ArrayList.remove(index) vs. ArrayList.remove(Object) to see which is faster
+        
+        MaxWord(String newWord, int newValue) {
+            word = newWord;
+            value = newValue;
+        }
+        
+        String getWord() {
+            return word;
+        }
+        
+        int getValue() {
+            return value;
+        }
     }
     
     static class Node {

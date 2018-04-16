@@ -341,7 +341,6 @@ public class ScrabblePlayer
         int wildcardIndex = -1;
         for (int j = 0; j < availableLetters.length; j++) {
             if (availableLetters[j] == '_') {
-                containsWildcard = true;
                 wildcardIndex = j;
             }
         }
@@ -355,10 +354,10 @@ public class ScrabblePlayer
             }
             improvLetters.add(opponent.getScrabbleWord().charAt(i));
             if (containsWildcard) {
-                
+                char[] wildAlpha = {'Q','Z', 'J', 'X', 'K'};
                 //calculate all possibilities of the wildcard being any letter
-                for (int k = 0; k < alphabet.length; k++) {
-                    improvLetters.set(wildcardIndex, alphabet[k]);
+                for (int k = 0; k < wildAlpha.length; k++) {
+                    improvLetters.set(wildcardIndex, wildAlpha[k]);
                     for (int p = 0; p < availableLetters.length; p++) {
                         improvLetters.add(improvLetters.remove(0));
                         enumerate(improvLetters, new boolean[improvLetters.size()], 0, "");
@@ -551,5 +550,5 @@ public class ScrabblePlayer
         void appendChild(Node newChild) {
             children.add(newChild);
         }
-    }    
+    }     
 }

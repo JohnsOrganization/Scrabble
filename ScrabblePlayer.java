@@ -31,12 +31,12 @@ import java.util.*;
 
 public class ScrabblePlayer
 {
-    private static ThreadMXBean bean;
     //Global field Variables
     //Initializes the root of the trie
     Node root;
     //Set for all enumerated words
     public static Set<String> set = new HashSet<>();
+    MaxWord globalMaxWord = new MaxWord(null, 0);
     //Char Alphabet 
     char[] alphabet = new char[] {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
             'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
@@ -55,7 +55,7 @@ public class ScrabblePlayer
         
         buildTrie(wordFile);
         
-        compressTrie();
+        //compressTrie();
         
         //************************************************************************CHANGES********************************
         //ArrayList<Node> children = root.getChildren().get(25).getChildren().get(0).getChildren();
@@ -114,6 +114,32 @@ public class ScrabblePlayer
          */
         ScrabbleWord opponent = getOpponentWord(board);
         
+        
+        
+        
+        for (int j = 0; j < root.getChildren().size(); j++) {
+            boolean found = false;
+            for (int i = 0; i < availableLetters.length; i++) {
+                if (root.getChildren().get(j).getLetter() == availableLetters[i]) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                for (int i = 0; i < opponent.getScrabbleWord().length(); i++) {
+                    if (opponent.getScrabbleWord().charAt(i) == root.getChildren().get(j).getLetter()) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            
+            if (!found) {
+                System.out.printf("removing: %s%n", root.getChildren().get(j).getLetter());
+                root.getChildren().remove(j);
+            }
+            
+        }
         
         /*
          * calls startEnumeration(availableLetters, opponent);
@@ -278,7 +304,7 @@ public class ScrabblePlayer
              if (!visited[i]) {
                  enumerate(availLet, visited, i, returnWord);
              }
-             }
+         }
          
          if (returnWord.length() != 0) {
          returnWord = returnWord.substring(returnWord.length() - 1);
@@ -349,15 +375,8 @@ public class ScrabblePlayer
     
     //////////////////////////////////////////////////    //////////////////////////////////////////////////
     void startEnumeration(char[] availableLetters, ScrabbleWord opponent) {
-      //Determines if there is a wildcard in the availableLetters
-        int wildcardIndex = -1;
         boolean hasWildCard = false;
-        for (int j = 0; j < availableLetters.length; j++) {
-            if (availableLetters[j] == '_') {
-                wildcardIndex = j;
-            }
-        }
-        
+        int wildcardIndex = 0;
         //Add each latter from the opponent's word into the calculation of valid words         
         for (int i = 0; i < opponent.getScrabbleWord().length(); i++) {
             //if our available letters contains a wildcard
@@ -367,7 +386,6 @@ public class ScrabblePlayer
             }
             improvLetters.add(opponent.getScrabbleWord().charAt(i));
             if (hasWildCard) {
-                char[] wildAlpha = {'Q','Z', 'J', 'X', 'K'};
                 //calculate all possibilities of the wildcard being any letter
                 for (int k = 0; k < LETTERS.length; k++) {
                     improvLetters.set(wildcardIndex, LETTERS[k]);
@@ -387,7 +405,6 @@ public class ScrabblePlayer
                     enumerate(improvLetters, new boolean[improvLetters.size()], 0, "");
                 }
             }
-            
         }
     }
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -555,6 +572,14 @@ public class ScrabblePlayer
         
         int getValue() {
             return value;
+        }
+        
+        void setWord(String newWord) {
+            word = newWord;
+        }
+        
+        void setValue(int newValue) {
+            value = newValue;
         }
     }
     

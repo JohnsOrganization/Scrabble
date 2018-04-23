@@ -25,7 +25,6 @@
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.lang.management.ThreadMXBean;
 import java.util.*;
 
 
@@ -36,7 +35,6 @@ public class ScrabblePlayer
     Node root;
     //Set for all enumerated words
     public static Set<String> set = new HashSet<>();
-    MaxWord globalMaxWord = new MaxWord(null, 0);
     //Char Alphabet 
     char[] alphabet = new char[] {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
             'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'};
@@ -54,23 +52,7 @@ public class ScrabblePlayer
     {
         
         buildTrie(wordFile);
-        
-        //compressTrie();
-        
-        //************************************************************************CHANGES********************************
-        //ArrayList<Node> children = root.getChildren().get(25).getChildren().get(0).getChildren();
-        //for (Node e : children) {
-        //    System.out.println(e.getWord());
-        //}
-        /*
-         * From the pdf file: "The constructor allows you to process the data and construct data structures in preparation for identifying words"
-         * I belive our goal is to build data structures in the constructor in under 5 minutes, that will then allow us to generate the best
-         * word in under 1 second.
-         */
-        
-        
-        
-        
+
     }// End of the Constructor
     
     // TO-Do
@@ -94,13 +76,8 @@ public class ScrabblePlayer
     //finds the best scrabble word to play in the game
     //Parameters: 2D char array of initial game board, char array of availble 7 letters
     public ScrabbleWord getScrabbleWord(char[][] board, char[] availableLetters)
-    {
-        //Strictly used for testing to show letters available
-        printAvailableLetters(availableLetters);
-        
-        
-        
-        /*
+    {  
+         /*
          *  the board that is passed in has a random word from words.txt placed in a
          *  random position on the board. So scan through the board to determine the location,
          *  length, and orientation of the first word.
@@ -114,32 +91,6 @@ public class ScrabblePlayer
          */
         ScrabbleWord opponent = getOpponentWord(board);
         
-        
-        
-        
-        for (int j = 0; j < root.getChildren().size(); j++) {
-            boolean found = false;
-            for (int i = 0; i < availableLetters.length; i++) {
-                if (root.getChildren().get(j).getLetter() == availableLetters[i]) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                for (int i = 0; i < opponent.getScrabbleWord().length(); i++) {
-                    if (opponent.getScrabbleWord().charAt(i) == root.getChildren().get(j).getLetter()) {
-                        found = true;
-                        break;
-                    }
-                }
-            }
-            
-            if (!found) {
-                System.out.printf("removing: %s%n", root.getChildren().get(j).getLetter());
-                root.getChildren().remove(j);
-            }
-            
-        }
         
         /*
          * calls startEnumeration(availableLetters, opponent);
@@ -160,20 +111,12 @@ public class ScrabblePlayer
          * Method determines the highest scoring word in the valid list
          */
         MaxWord  determinedMaxWord = determineMaxWord(validWords);
-       //Test Print
-        System.out.printf("LargestWord: %s%nValue: %d%n", determinedMaxWord.getWord(), determinedMaxWord.getValue());
-        
-        
         
         /*
          * Mehtod determineOppLetUsed();
          * Finds which letter the AI scrabble word should play off of in the game
          */
-        StringBuilder availLetWord = determineOppLetUsed(availableLetters, determinedMaxWord, opponent);
-        //TestPrint
-        //System.out.printf("availLetWord: %s%n", availLetWord.toString());
-        
-        
+        StringBuilder availLetWord = determineOppLetUsed(availableLetters, determinedMaxWord, opponent);       
         
         
         /*
@@ -187,14 +130,12 @@ public class ScrabblePlayer
     void buildTrie(String wordFile) throws FileNotFoundException {
       //create scanner for the dictionary
         Scanner dictFile = new Scanner(new File(wordFile));
-        int ctr = 0;
         root = new Node(' ', null);
         //While not at EOF 
         while (dictFile.hasNext()) {
             //read in one line at a time
             String nextWord = dictFile.nextLine().toUpperCase();
             if (nextWord.length() < 9) {
-                ctr++;
                 ArrayList<Node> children = root.getChildren();
                 for (int charCtr = 0; charCtr < nextWord.length(); charCtr++) {
                     //Nothing has been added to the root
@@ -234,12 +175,7 @@ public class ScrabblePlayer
             
         } // End of scanner reading
 
-    }
-    
-    void compressTrie() {
-        
-    }
-    
+    }    
     
     /*
      * Method takes in:
@@ -251,7 +187,7 @@ public class ScrabblePlayer
         while (!validBoundary(sWord)) {
             validWords.remove(sWord.getScrabbleWord());
             MaxWord nextMaxWord = determineMaxWord(validWords);
-            System.out.printf("Next Max Word: %s%n", nextMaxWord.getWord());
+           
             StringBuilder nextAvailLetWord = determineOppLetUsed(availableLetters, nextMaxWord, opponent);
             sWord = determineWordLocation(opponent, nextMaxWord, nextAvailLetWord);
         }
@@ -304,7 +240,7 @@ public class ScrabblePlayer
              if (!visited[i]) {
                  enumerate(availLet, visited, i, returnWord);
              }
-         }
+             }
          
          if (returnWord.length() != 0) {
          returnWord = returnWord.substring(returnWord.length() - 1);
@@ -318,15 +254,11 @@ public class ScrabblePlayer
      */
     ScrabbleWord determineWordLocation(ScrabbleWord opponent, MaxWord determinedMaxWord, StringBuilder availLetWord) {
         int arrayListNum = 0;
-        System.out.printf("AvailWord: %s%n", availLetWord);
         for (int i = 0; i < opponent.getScrabbleWord().length(); i++) {
             if (opponent.getScrabbleWord().charAt(i) == availLetWord.charAt(0)) {
                 arrayListNum = i;
             }
-        }
-        //TEst Print
-        //System.out.printf("ArrayListNum: %d%n", arrayListNum);
-        
+        }        
         
         //Determine the position that the word should be in
         int playerStartRow = -1;
@@ -372,11 +304,10 @@ public class ScrabblePlayer
      * Starts the enumeration of all possible strings
      * has check for wild cards
      */
-    
-    //////////////////////////////////////////////////    //////////////////////////////////////////////////
     void startEnumeration(char[] availableLetters, ScrabbleWord opponent) {
-        boolean hasWildCard = false;
-        int wildcardIndex = 0;
+      //Determines if there is a wildcard in the availableLetters
+        int wildcardIndex = -1;
+        boolean hasWildCard = false;        
         //Add each latter from the opponent's word into the calculation of valid words         
         for (int i = 0; i < opponent.getScrabbleWord().length(); i++) {
             //if our available letters contains a wildcard
@@ -386,6 +317,7 @@ public class ScrabblePlayer
             }
             improvLetters.add(opponent.getScrabbleWord().charAt(i));
             if (hasWildCard) {
+                char[] wildAlpha = {'Q','Z', 'J', 'X', 'K'};
                 //calculate all possibilities of the wildcard being any letter
                 for (int k = 0; k < LETTERS.length; k++) {
                     improvLetters.set(wildcardIndex, LETTERS[k]);
@@ -405,9 +337,9 @@ public class ScrabblePlayer
                     enumerate(improvLetters, new boolean[improvLetters.size()], 0, "");
                 }
             }
+            
         }
     }
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
     
     /*
      * determineOppLetUsed takes parameters:
@@ -415,7 +347,6 @@ public class ScrabblePlayer
      * method finds the letter in the opponents 
      */
     StringBuilder determineOppLetUsed(char[] availableLetters, MaxWord determinedMaxWord, ScrabbleWord opponent) {
-        System.out.printf("determinedMaxWord: %s%n", determinedMaxWord.getWord());
         StringBuilder availLetWord = new StringBuilder("");
         for (int i = 0; i < determinedMaxWord.getWord().length(); i++) {
             availLetWord.append(determinedMaxWord.getWord().charAt(i));
@@ -425,7 +356,6 @@ public class ScrabblePlayer
             for (int j = 0; j < availLetWord.length(); j++) {
                 
                 if (availableLetters[i] == availLetWord.charAt(j)) {
-                    System.out.printf("  %s%n", availLetWord.charAt(j));
                     availLetWord.deleteCharAt(j);
                     break;
                 }
@@ -471,7 +401,6 @@ public class ScrabblePlayer
         for (int row = 0; row < board.length; row++) {
             //Iterate through the cols of each row in the board
             for (int col = 0; col < board[0].length; col++) {
-                System.out.printf("%s", board[row][col]);
                 if (Character.getNumericValue(board[row][col]) != -1) {
                     opponentWord = opponentWord + board[row][col];
                     
@@ -488,7 +417,6 @@ public class ScrabblePlayer
                     }
                 }
             }
-            System.out.println();
         }
       
         return new ScrabbleWord(opponentWord, startRow, startCol, opponentOrientation);
@@ -518,7 +446,6 @@ public class ScrabblePlayer
             if (currentWordScore > maxWordScore) {
                 maxWordScore = currentWordScore;
                 maxWord = paramValidWords.get(i);
-                //System.out.printf("%nWord: %s%nScore: %d%n", maxWord, maxWordScore);
             }
         }
         //return the word
@@ -533,14 +460,10 @@ public class ScrabblePlayer
         ArrayList<Node> currentChildren = root.getChildren();
         //Node current = currentChildren.get(0);
         for (int i = 0; i < testWord.length(); i++) {
-            //System.out.printf("%s:", testWord.charAt(i));
             INNER_LOOP:
             for (int j = 0; j < currentChildren.size(); j++) {
-                //System.out.print(currentChildren.get(j).getLetter());
                 if (testWord.charAt(i) == currentChildren.get(j).getLetter()) {
-                    //System.out.println(currentChildren.get(j).getLetter());
                     if ((currentChildren.get(j).getWord() != null) && currentChildren.get(j).getWord().equals(testWord)) {
-                        //System.out.println();
                         return true;
                     } else {
                         currentChildren = currentChildren.get(j).getChildren();
@@ -572,14 +495,6 @@ public class ScrabblePlayer
         
         int getValue() {
             return value;
-        }
-        
-        void setWord(String newWord) {
-            word = newWord;
-        }
-        
-        void setValue(int newValue) {
-            value = newValue;
         }
     }
     

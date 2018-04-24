@@ -81,7 +81,7 @@ public class ScrabbleWord
      * get the orientation
      * @return the orientation
      */
-    public int getOrientation()
+    public char getOrientation()
     {
     return orientation;
     }

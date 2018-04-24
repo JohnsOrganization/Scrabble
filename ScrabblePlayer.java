@@ -77,6 +77,7 @@ public class ScrabblePlayer
     //Parameters: 2D char array of initial game board, char array of availble 7 letters
     public ScrabbleWord getScrabbleWord(char[][] board, char[] availableLetters)
     {  
+        set.clear();
          /*
          *  the board that is passed in has a random word from words.txt placed in a
          *  random position on the board. So scan through the board to determine the location,
@@ -98,6 +99,7 @@ public class ScrabblePlayer
          * for wild cards forms multiple strings with each possible letter for underscore tile
          * Otherwise forms a string of letters and calls the enumerate method on the sequence
          */
+
         startEnumeration(availableLetters, opponent);
         
 
@@ -106,6 +108,7 @@ public class ScrabblePlayer
          */
         ArrayList<String> validWords = new ArrayList<String>(set);
         
+
         /*
          * Uses MaxWord object to hold max word
          * Method determines the highest scoring word in the valid list
@@ -235,17 +238,20 @@ public class ScrabblePlayer
          if (checkValidity(returnWord)) {
              set.add(returnWord);
          }
-         for (int i = 0; i < availLet.size(); i++) {
-             //if the word hasn't been visited recursively call enumerate
-             if (!visited[i]) {
-                 enumerate(availLet, visited, i, returnWord);
+         if (set.size() < 20) {
+             for (int i = 0; i < availLet.size(); i++) {
+                 //if the word hasn't been visited recursively call enumerate
+                 if (!visited[i]) {
+                     enumerate(availLet, visited, i, returnWord);
+                 }
+                 }
+             
+             if (returnWord.length() != 0) {
+             returnWord = returnWord.substring(returnWord.length() - 1);
              }
-             }
-         
-         if (returnWord.length() != 0) {
-         returnWord = returnWord.substring(returnWord.length() - 1);
+                 visited[position] = false;
          }
-             visited[position] = false;
+         
      }
     
     /*
@@ -317,7 +323,6 @@ public class ScrabblePlayer
             }
             improvLetters.add(opponent.getScrabbleWord().charAt(i));
             if (hasWildCard) {
-                char[] wildAlpha = {'Q','Z', 'J', 'X', 'K'};
                 //calculate all possibilities of the wildcard being any letter
                 for (int k = 0; k < LETTERS.length; k++) {
                     improvLetters.set(wildcardIndex, LETTERS[k]);
@@ -330,12 +335,12 @@ public class ScrabblePlayer
                 
                 
             } else {
-                
+
                 enumerate(improvLetters, new boolean[improvLetters.size()], 0, "");
                 for (int k = 0; k < availableLetters.length; k++) {
                     improvLetters.add(improvLetters.remove(0));
                     enumerate(improvLetters, new boolean[improvLetters.size()], 0, "");
-                }
+                }                
             }
             
         }
@@ -363,20 +368,16 @@ public class ScrabblePlayer
         }
         
         if (availLetWord.length() == 0) {
-            boolean isFound = false;
-            OUTER_LOOP:
-            while(!isFound) {
-                for (int i = 0; i < determinedMaxWord.getWord().length(); i++) {
-                    for (int j = 0; j < opponent.getScrabbleWord().length(); j++) {
-                        if (opponent.getScrabbleWord().charAt(j) == determinedMaxWord.getWord().charAt(i)) {
-                            availLetWord.append(opponent.getScrabbleWord().charAt(j));
-                            isFound = true;
-                            break OUTER_LOOP;
-                        }
+            for (int i = 0; i < determinedMaxWord.getWord().length(); i++) {
+                for (int j = 0; j < opponent.getScrabbleWord().length(); j++) {
+                    if (opponent.getScrabbleWord().charAt(j) == determinedMaxWord.getWord().charAt(i)) {
+                        availLetWord.append(opponent.getScrabbleWord().charAt(j));
                     }
                 }
             }
-            
+            if (availLetWord.length() == 0) {
+                availLetWord.append("A");
+            }
         }
         
             
